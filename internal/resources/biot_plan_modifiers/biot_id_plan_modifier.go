@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-
 type CopyIDFromStateByNameSetModifier struct{}
 
 func (m CopyIDFromStateByNameSetModifier) Description(_ context.Context) string {
@@ -57,10 +56,10 @@ func copyIDFromStateByNameForSet(
 
 		for _, obj := range stateObjs {
 			attrMap := obj.Attributes()
-		
+
 			name, okName := attrMap["name"].(types.String)
 			id, okID := attrMap["id"].(types.String)
-		
+
 			if okName && okID &&
 				!name.IsNull() && !name.IsUnknown() &&
 				!id.IsNull() && !id.IsUnknown() {
@@ -74,26 +73,26 @@ func copyIDFromStateByNameForSet(
 	for _, obj := range planObjs {
 		// Get attribute map from the object
 		attrMap := obj.Attributes()
-	
+
 		nameVal, okName := attrMap["name"].(types.String)
 		idVal, okID := attrMap["id"].(types.String)
-	
+
 		// Copy ID from state if name matches and ID is missing
-		if okName && !nameVal.IsNull() && !nameVal.IsUnknown() &&
-			(okID == false || idVal.IsNull() || idVal.IsUnknown()) {
-	
+		if okName && !nameVal.IsNull() && !nameVal.IsUnknown() && 
+			(!okID || idVal.IsNull() || idVal.IsUnknown()) {
+
 			if idFromState, exists := nameToID[nameVal.ValueString()]; exists {
 				attrMap["id"] = types.StringValue(idFromState)
 			}
 		}
-	
+
 		objType := obj.Type(ctx).(types.ObjectType)
 		newObj, objDiags := types.ObjectValue(objType.AttributeTypes(), attrMap)
 		diags.Append(objDiags...)
 		if objDiags.HasError() {
 			return planSet, diags
 		}
-	
+
 		updatedObjs = append(updatedObjs, newObj)
 	}
 

@@ -92,7 +92,7 @@ func (r *BiotTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 			// 	Computed: true,
 			// },
 			"builtin_attributes": schema.SetNestedAttribute{
-				Optional: true,
+				Optional:    true,
 				Description: "Builtin attributes associated with the template.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: attributeSchema(),
@@ -102,7 +102,7 @@ func (r *BiotTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 				},
 			},
 			"custom_attributes": schema.SetNestedAttribute{
-				Optional: true,
+				Optional:    true,
 				Description: "Custom attributes associated with the template.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: attributeSchema(),
@@ -112,7 +112,7 @@ func (r *BiotTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 				},
 			},
 			"template_attributes": schema.SetNestedAttribute{
-				Optional: true,
+				Optional:    true,
 				Description: "Template attributes associated with the template.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: templateAttributeSchema(),
@@ -127,7 +127,7 @@ func (r *BiotTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 
 func attributeSchema() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"id":           schema.StringAttribute{
+		"id": schema.StringAttribute{
 			Computed: true,
 		},
 		"display_name": schema.StringAttribute{Optional: true},
@@ -218,7 +218,7 @@ func templateAttributeSchema() map[string]schema.Attribute {
 			biotplanmodifiers.JsonNormalizePlanModifier{},
 		},
 	}
-	
+
 	attrSchema["organization_selection"] = schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{

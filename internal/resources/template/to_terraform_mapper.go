@@ -6,6 +6,7 @@ import (
 	"biot.com/terraform-provider-biot/internal/api"
 	"biot.com/terraform-provider-biot/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 func mapTemplateResponseToTerrformModel(ctx context.Context, resp api.TemplateResponse) TerraformTemplate {
@@ -26,12 +27,12 @@ func mapTemplateResponseToTerrformModel(ctx context.Context, resp api.TemplateRe
 	}
 
 	template := TerraformTemplate{
-		ID:          types.StringValue(resp.ID),
-		Name:        types.StringValue(resp.Name),
-		DisplayName: types.StringValue(resp.DisplayName),
-		Description: utils.StringOrNullPtr(resp.Description),
+		ID:                  types.StringValue(resp.ID),
+		Name:                types.StringValue(resp.Name),
+		DisplayName:         types.StringValue(resp.DisplayName),
+		Description:         utils.StringOrNullPtr(resp.Description),
 		OwnerOrganizationID: utils.StringOrNullPtr(resp.OwnerOrganizationID),
-		EntityTypeName: types.StringValue(resp.EntityTypeName),
+		EntityTypeName:      types.StringValue(resp.EntityTypeName),
 
 		AnalyticsDbConfiguration: mapToTerraformAnalyticsDbConfiguration(ctx, resp.AnalyticsDbConfiguration),
 
@@ -52,13 +53,13 @@ func mapTemplateResponseToTerrformModel(ctx context.Context, resp api.TemplateRe
 
 func mapAttributeResponseToTerrformAttribute(ctx context.Context, attr api.BaseAttributeResponse) TerraformAttribute {
 	return TerraformAttribute{
-		Name:                     types.StringValue(attr.Name),
+		Name: types.StringValue(attr.Name),
 		// BasePath:                 stringOrNullPtr(attr.BasePath),
 		ID:                       types.StringValue(attr.ID),
 		DisplayName:              types.StringValue(attr.DisplayName),
 		Phi:                      types.BoolValue(attr.Phi),
 		Type:                     types.StringValue(attr.Type),
-		Category:                 types.StringValue(attr.Category.Name),
+		Category:                 mapToTerraformCategory(ctx, attr.Category),
 		SelectableValues:         mapToTerraformSelectableValues(ctx, attr.Type, attr.SelectableValues),
 		AnalyticsDbConfiguration: mapToTerraformAnalyticsDbConfiguration(ctx, attr.AnalyticsDbConfiguration),
 		ReferenceConfiguration:   mapToTerraformReferenceConfiguration(ctx, attr.ReferenceConfiguration),
@@ -70,7 +71,6 @@ func mapAttributeResponseToTerrformAttribute(ctx context.Context, attr api.BaseA
 
 func mapTemplateAttributeResponseToTerrformAttribute(ctx context.Context, attr api.TemplateAttributeResponse) TerraformTemplateAttribute {
 	base := mapAttributeResponseToTerrformAttribute(ctx, attr.BaseAttributeResponse)
-	
 
 	return TerraformTemplateAttribute{
 		TerraformAttribute:    base,
@@ -89,9 +89,19 @@ func mapToTerraformAnalyticsDbConfiguration(ctx context.Context, adbConfiguratio
 	}
 }
 
+func mapToTerraformCategory(ctx context.Context, category *api.Category) basetypes.StringValue {
+	if category == nil {
+		return types.StringNull()
+	}
+
+	return types.StringValue(category.Name)
+}
+
 func mapToTerraformSelectableValues(ctx context.Context, attributeType string, selectableValues []api.SelectableValue) []TerraformSelectableValue {
+	// It is important that we do NOT return nil here, otherwise terraform will detect changes where there are none.
 	result := []TerraformSelectableValue{}
 
+	// Timezone and Locale attributes are hard coded VERY LONG array we want to ignore them.
 	if attributeType == "TIMEZONE" || attributeType == "LOCALE" {
 		return []TerraformSelectableValue{}
 	}
@@ -114,10 +124,10 @@ func mapToTerraformReferenceConfiguration(ctx context.Context, referenceConfigur
 
 	return &TerraformReferenceConfiguration{
 		Uniquely:                           types.BoolValue(referenceConfiguration.Uniquely),
-		ReferencedSideAttributeName:       types.StringValue(referenceConfiguration.ReferencedSideAttributeName),
+		ReferencedSideAttributeName:        types.StringValue(referenceConfiguration.ReferencedSideAttributeName),
 		ReferencedSideAttributeDisplayName: types.StringValue(referenceConfiguration.ReferencedSideAttributeDisplayName),
-		ValidTemplatesToReference:         utils.ConvertStringList(referenceConfiguration.ValidTemplatesToReference),
-		EntityType:                        types.StringValue(referenceConfiguration.EntityType),
+		ValidTemplatesToReference:          utils.ConvertStringList(referenceConfiguration.ValidTemplatesToReference),
+		EntityType:                         types.StringValue(referenceConfiguration.EntityType),
 	}
 }
 
@@ -127,9 +137,9 @@ func mapToTerraformLinkConfiguration(ctx context.Context, linkConfiguration *api
 	}
 
 	return &TerraformLinkConfiguration{
-		TemplateID: 	types.StringValue(linkConfiguration.TemplateID),
+		TemplateID:     types.StringValue(linkConfiguration.TemplateID),
 		EntityTypeName: types.StringValue(linkConfiguration.EntityTypeName),
-		AttributeID: 	types.StringValue(linkConfiguration.AttributeID),
+		AttributeID:    types.StringValue(linkConfiguration.AttributeID),
 	}
 }
 
@@ -185,7 +195,7 @@ func mapToTerraformOrganizationSelection(ctx context.Context, organizationSelect
 	}
 
 	return &TerraformOrganizationSelection{
-		Allowed: types.BoolValue(organizationSelection.Allowed),
+		Allowed:       types.BoolValue(organizationSelection.Allowed),
 		Configuration: mapToOrganizationSelectionConfiguration(ctx, organizationSelection.Configuration),
 	}
 }
@@ -196,7 +206,7 @@ func mapToOrganizationSelectionConfiguration(ctx context.Context, organizationSe
 	}
 
 	return &TerraformOrganizationSelectionConfiguration{
-		All: types.BoolValue(organizationSelectionConfiguration.All),
+		All:      types.BoolValue(organizationSelectionConfiguration.All),
 		Selected: mapToTerraformIDWrappers(ctx, organizationSelectionConfiguration.Selected),
 	}
 }

@@ -60,7 +60,7 @@ func mapBaseAttributes(attrs []TerraformAttribute) []api.BaseAttribute {
 
 func mapBaseAttribute(attr TerraformAttribute) api.BaseAttribute {
 	return api.BaseAttribute{
-		Name:                     attr.Name.ValueString(),
+		Name: attr.Name.ValueString(),
 		// BasePath:                 stringOrNilPtr(attr.BasePath),
 		ID:                       attr.ID.ValueString(),
 		DisplayName:              attr.DisplayName.ValueString(),
@@ -87,47 +87,47 @@ func mapCustomAttributes(attrs []TerraformAttribute) []api.CustomAttributeReques
 }
 
 func mapTemplateAttributes(attrs []TerraformTemplateAttribute) []api.CreateTemplateAttribute {
-    result := make([]api.CreateTemplateAttribute, 0, len(attrs))
+	result := make([]api.CreateTemplateAttribute, 0, len(attrs))
 
-    for _, attr := range attrs {
-        var value interface{}
+	for _, attr := range attrs {
+		var value interface{}
 
-        if !attr.Value.IsNull() && !attr.Value.IsUnknown() {
-            jsonStr := attr.Value.ValueString()
-            var decoded map[string]interface{}
-            json.Unmarshal([]byte(jsonStr), &decoded)
+		if !attr.Value.IsNull() && !attr.Value.IsUnknown() {
+			jsonStr := attr.Value.ValueString()
+			var decoded map[string]interface{}
+			json.Unmarshal([]byte(jsonStr), &decoded)
 			if v, ok := decoded["value"]; ok {
 				value = v
 			} else {
 				// "value" key missing, fallback to nil or whole map
 				value = nil
 			}
-        } else {
-            value = nil
-        }
+		} else {
+			value = nil
+		}
 
-        result = append(result, api.CreateTemplateAttribute{
-            BaseAttribute:         mapBaseAttribute(attr.TerraformAttribute),
-            Value:                 value,
-            OrganizationSelection: mapOrgSelection(attr.OrganizationSelection),
-        })
-    }
+		result = append(result, api.CreateTemplateAttribute{
+			BaseAttribute:         mapBaseAttribute(attr.TerraformAttribute),
+			Value:                 value,
+			OrganizationSelection: mapOrgSelection(attr.OrganizationSelection),
+		})
+	}
 
-    return result
+	return result
 }
 
 func mapReferenceConfiguration(rc *TerraformReferenceConfiguration) *api.ReferenceConfiguration {
-    if rc == nil {
-        return nil
-    }
+	if rc == nil {
+		return nil
+	}
 
-    return &api.ReferenceConfiguration{
-        Uniquely:                           rc.Uniquely.ValueBool(),
-        ReferencedSideAttributeName:        rc.ReferencedSideAttributeName.ValueString(),
-        ReferencedSideAttributeDisplayName: rc.ReferencedSideAttributeDisplayName.ValueString(),
-        ValidTemplatesToReference:          utils.ConvertTerraformStringList(rc.ValidTemplatesToReference),
-        EntityType:                         rc.EntityType.ValueString(),
-    }
+	return &api.ReferenceConfiguration{
+		Uniquely:                           rc.Uniquely.ValueBool(),
+		ReferencedSideAttributeName:        rc.ReferencedSideAttributeName.ValueString(),
+		ReferencedSideAttributeDisplayName: rc.ReferencedSideAttributeDisplayName.ValueString(),
+		ValidTemplatesToReference:          utils.ConvertTerraformStringList(rc.ValidTemplatesToReference),
+		EntityType:                         rc.EntityType.ValueString(),
+	}
 }
 
 func mapLinkConfiguration(lc *TerraformLinkConfiguration) *api.LinkConfiguration {
@@ -233,4 +233,3 @@ func mapOrgSelectionConfig(cfg *TerraformOrganizationSelectionConfiguration) *ap
 		All:      cfg.All.ValueBool(),
 	}
 }
-

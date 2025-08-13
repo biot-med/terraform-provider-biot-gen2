@@ -56,7 +56,7 @@ const (
 
 var httpClient = &http.Client{}
 
-type biotSdkImpl struct{
+type biotSdkImpl struct {
 	baseUrl string
 }
 
@@ -107,9 +107,9 @@ func login(ctx context.Context, url string, requestBody []byte) (LoginResponse, 
 }
 
 func (biotSdkImpl biotSdkImpl) CreateTemplate(ctx context.Context, accessToken string, request CreateTemplateRequest) (TemplateResponse, error) {
-	// TODO: Add ?force=true ????
-	var url = fmt.Sprintf("%s/%s/v1/templates", biotSdkImpl.baseUrl, settingsPrefix)
 	
+	var url = fmt.Sprintf("%s/%s/v1/templates", biotSdkImpl.baseUrl, settingsPrefix)
+
 	// Marshal it to JSON
 	jsonBody, _ := json.Marshal(request)
 
@@ -214,14 +214,13 @@ func isResponseOk(response *http.Response) bool {
 func getErrorMessage(response *http.Response) error {
 	var biotErrorObject map[string]interface{}
 	json.NewDecoder(response.Body).Decode(&biotErrorObject)
-	
+
 	if msg, ok := biotErrorObject["message"].(string); ok {
 		return errors.New(msg)
 	}
 
 	return fmt.Errorf("unexpected error - server responded with status code: [%d])", response.StatusCode)
 }
-
 
 func encodeSearchRequest(searchRequest map[string]interface{}) (string, error) {
 	jsonBytes, err := json.Marshal(searchRequest)
@@ -234,7 +233,7 @@ func encodeSearchRequest(searchRequest map[string]interface{}) (string, error) {
 }
 
 func NewBiotSdkImpl(baseUrl string) *biotSdkImpl {
-    return &biotSdkImpl{
-        baseUrl: baseUrl,
-    }
+	return &biotSdkImpl{
+		baseUrl: baseUrl,
+	}
 }
