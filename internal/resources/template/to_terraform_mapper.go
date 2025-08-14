@@ -166,7 +166,7 @@ func mapToTerraformNumericMetaData(ctx context.Context, numericMetaData *api.Num
 	lowerRange := utils.Int64OrNullPtr(numericMetaData.LowerRange)
 
 	return &TerraformNumericMetaData{
-		Units:      utils.StringOrNull(numericMetaData.Units),
+		Units:      utils.StringOrNullPtr(numericMetaData.Units),
 		UpperRange: upperRange,
 		LowerRange: lowerRange,
 		SubType:    utils.StringOrNull(numericMetaData.SubType),

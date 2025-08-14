@@ -60,7 +60,7 @@ func mapBaseAttributes(attrs []TerraformAttribute) []api.BaseAttribute {
 
 func mapBaseAttribute(attr TerraformAttribute) api.BaseAttribute {
 	return api.BaseAttribute{
-		Name: attr.Name.ValueString(),
+		Name:                     attr.Name.ValueString(),
 		BasePath:                 utils.StringOrNilPtr(attr.BasePath),
 		ID:                       attr.ID.ValueString(),
 		DisplayName:              attr.DisplayName.ValueString(),
@@ -169,28 +169,28 @@ func mapValidation(v *TerraformValidation) *api.Validation {
 	return validation
 }
 
-func mapNumericMetaData(nm *TerraformNumericMetaData) *api.NumericMetaData {
-	if nm == nil {
+func mapNumericMetaData(numericMetaData *TerraformNumericMetaData) *api.NumericMetaData {
+	if numericMetaData == nil {
 		return nil
 	}
 
 	var upperRange *int64
-	if !nm.UpperRange.IsNull() && !nm.UpperRange.IsUnknown() {
-		val := nm.UpperRange.ValueInt64()
+	if !numericMetaData.UpperRange.IsNull() && !numericMetaData.UpperRange.IsUnknown() {
+		val := numericMetaData.UpperRange.ValueInt64()
 		upperRange = &val
 	}
 
 	var lowerRange *int64
-	if !nm.LowerRange.IsNull() && !nm.LowerRange.IsUnknown() {
-		val := nm.LowerRange.ValueInt64()
+	if !numericMetaData.LowerRange.IsNull() && !numericMetaData.LowerRange.IsUnknown() {
+		val := numericMetaData.LowerRange.ValueInt64()
 		lowerRange = &val
 	}
 
 	return &api.NumericMetaData{
-		Units:      utils.StringOrEmpty(nm.Units),
+		Units:      utils.StringOrNilPtr(numericMetaData.Units),
 		UpperRange: upperRange,
 		LowerRange: lowerRange,
-		SubType:    utils.StringOrEmpty(nm.SubType),
+		SubType:    utils.StringOrEmpty(numericMetaData.SubType),
 	}
 }
 

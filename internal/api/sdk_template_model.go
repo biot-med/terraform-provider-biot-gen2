@@ -1,11 +1,11 @@
 package api
 
 type BaseTemplate struct {
-	DisplayName              string                     `json:"displayName"`
-	Name                     string                     `json:"name"`
-	Description              *string                    `json:"description"`
-	OwnerOrganizationID      *string                    `json:"ownerOrganizationId"`
-	AnalyticsDbConfiguration *AnalyticsDbConfiguration  `json:"analyticsDbConfiguration"`
+	DisplayName              string                    `json:"displayName"`
+	Name                     string                    `json:"name"`
+	Description              *string                   `json:"description"`
+	OwnerOrganizationID      *string                   `json:"ownerOrganizationId"`
+	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
 }
 
 type UpdateTemplateRequest struct {
@@ -18,7 +18,7 @@ type UpdateTemplateRequest struct {
 
 type CreateTemplateRequest struct {
 	BaseTemplate
-	EntityType     	   string                    `json:"entityType"`
+	EntityType         string                    `json:"entityType"`
 	ParentTemplateID   *string                   `json:"parentTemplateId"`
 	BuiltInAttributes  []BaseAttribute           `json:"builtInAttributes"`
 	CustomAttributes   []CustomAttributeRequest  `json:"customAttributes"`
@@ -27,7 +27,7 @@ type CreateTemplateRequest struct {
 
 type TemplateResponse struct {
 	BaseTemplate
-	ID                 string                      `json:"id"`
+	ID string `json:"id"`
 	// TODO: Do we want ? (same todo in to_terraform_mapper and resource schema and TerraformTemplate)
 	// Removable          bool                        `json:"removable"`
 	// CreationTime       string                      `json:"creationTime"`
@@ -92,20 +92,20 @@ type CustomAttributeRequest struct {
 
 type BaseAttributeResponse struct {
 	BaseAttribute
-	Type                     string                    `json:"type"`
-	Name                     string                    `json:"name"`
+	Type     string    `json:"type"`
+	Name     string    `json:"name"`
 	Category *Category `json:"category"`
 }
 
 type CreateTemplateAttribute struct {
 	BaseAttribute
-	Value                 interface{}             `json:"value"`
+	Value                 interface{}            `json:"value"`
 	OrganizationSelection *OrganizationSelection `json:"organizationSelection,omitempty"`
 }
 
 type TemplateAttributeResponse struct {
 	BaseAttributeResponse
-	Value                 interface{}             `json:"value"`
+	Value                 interface{}            `json:"value"`
 	OrganizationSelection *OrganizationSelection `json:"organizationSelection,omitempty"`
 }
 
@@ -148,10 +148,10 @@ type ValidationMetadata struct {
 }
 
 type NumericMetaData struct {
-    Units      string
-    UpperRange *int64
-    LowerRange *int64
-    SubType    string
+	Units      *string `json:"units"`
+	UpperRange *int64  `json:"upperRange"`
+	LowerRange *int64  `json:"lowerRange"`
+	SubType    string  `json:"subType"`
 }
 
 type Category struct {
