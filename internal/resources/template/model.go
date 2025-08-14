@@ -22,7 +22,7 @@ type TerraformTemplate struct {
 
 type TerraformAttribute struct {
 	Name                     types.String                          `tfsdk:"name"`
-	// BasePath                 types.String                          `tfsdk:"base_path"`
+	BasePath                 types.String                          `tfsdk:"base_path"`
 	ID                       types.String                          `tfsdk:"id"`
 	DisplayName              types.String                          `tfsdk:"display_name"`
 	Phi                      types.Bool                            `tfsdk:"phi"`

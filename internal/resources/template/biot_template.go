@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"biot.com/terraform-provider-biot/internal/api"
 	biotplanmodifiers "biot.com/terraform-provider-biot/internal/resources/biot_plan_modifiers"
@@ -135,7 +136,7 @@ func attributeSchema() map[string]schema.Attribute {
 		"name":         schema.StringAttribute{Required: true},
 		"type":         schema.StringAttribute{Required: true},
 		"category":     schema.StringAttribute{Optional: true},
-		// "base_path":    schema.StringAttribute{Optional: true},
+		"base_path":    schema.StringAttribute{Optional: true},
 
 		"reference_configuration": schema.SingleNestedAttribute{
 			Optional: true,
@@ -352,6 +353,7 @@ func (r *BiotTemplateResource) ImportState(ctx context.Context, req resource.Imp
 
 	entityType := idParts[0]
 	templateName := idParts[1]
+	tflog.Debug(ctx, fmt.Sprintf("Template importState: Going to import entity type: [%s], template name: [%s]", entityType, templateName))
 
 	templateResponse, err := r.client.GetTemplateByTypeAndName(ctx, entityType, templateName)
 
@@ -362,6 +364,7 @@ func (r *BiotTemplateResource) ImportState(ctx context.Context, req resource.Imp
 		)
 		return
 	}
+	tflog.Debug(ctx, fmt.Sprintf("Template importState: Successfully got template with name: [%s], and id [%s]", templateResponse.Name, templateResponse.ID))
 
 	tfModel := mapTemplateResponseToTerrformModel(ctx, templateResponse)
 
@@ -370,6 +373,4 @@ func (r *BiotTemplateResource) ImportState(ctx context.Context, req resource.Imp
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	// MapTemplateResponseToState(ctx, templateResponse, &resp.State, &resp.Diagnostics)
 }

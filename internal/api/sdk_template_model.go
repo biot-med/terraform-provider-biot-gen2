@@ -70,7 +70,7 @@ type PageMetadata struct {
 
 type BaseAttribute struct {
 	Name                     string                    `json:"name"`
-	// BasePath                 *string                   `json:"basePath"`
+	BasePath                 *string                   `json:"basePath"`
 	ID                       string                    `json:"id"`
 	DisplayName              string                    `json:"displayName"`
 	Phi                      bool                      `json:"phi"`
@@ -94,7 +94,6 @@ type BaseAttributeResponse struct {
 	BaseAttribute
 	Type                     string                    `json:"type"`
 	Name                     string                    `json:"name"`
-	// BasePath                 *string                   `json:"basePath"`
 	Category *Category `json:"category"`
 }
 

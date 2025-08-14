@@ -53,8 +53,8 @@ func mapTemplateResponseToTerrformModel(ctx context.Context, resp api.TemplateRe
 
 func mapAttributeResponseToTerrformAttribute(ctx context.Context, attr api.BaseAttributeResponse) TerraformAttribute {
 	return TerraformAttribute{
-		Name: types.StringValue(attr.Name),
-		// BasePath:                 stringOrNullPtr(attr.BasePath),
+		Name:                     types.StringValue(attr.Name),
+		BasePath:                 utils.StringOrNullPtr(attr.BasePath),
 		ID:                       types.StringValue(attr.ID),
 		DisplayName:              types.StringValue(attr.DisplayName),
 		Phi:                      types.BoolValue(attr.Phi),

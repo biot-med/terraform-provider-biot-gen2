@@ -61,7 +61,7 @@ func mapBaseAttributes(attrs []TerraformAttribute) []api.BaseAttribute {
 func mapBaseAttribute(attr TerraformAttribute) api.BaseAttribute {
 	return api.BaseAttribute{
 		Name: attr.Name.ValueString(),
-		// BasePath:                 stringOrNilPtr(attr.BasePath),
+		BasePath:                 utils.StringOrNilPtr(attr.BasePath),
 		ID:                       attr.ID.ValueString(),
 		DisplayName:              attr.DisplayName.ValueString(),
 		Phi:                      attr.Phi.ValueBool(),
