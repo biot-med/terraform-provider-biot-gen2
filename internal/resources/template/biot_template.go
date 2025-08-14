@@ -333,7 +333,7 @@ func (r *BiotTemplateResource) Delete(ctx context.Context, req resource.DeleteRe
 	req.State.Get(ctx, &state)
 
 	client := r.client
-	err := client.DeleteTemplate(ctx, state.Name.ValueString())
+	err := client.DeleteTemplate(ctx, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Failed to delete template: %s", err))
 	}

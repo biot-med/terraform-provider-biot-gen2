@@ -44,6 +44,7 @@ type BiotSdk interface {
 	CreateTemplate(ctx context.Context, accessToken string, request CreateTemplateRequest) (TemplateResponse, error)
 	UpdateTemplate(ctx context.Context, accessToken string, id string, request UpdateTemplateRequest) (TemplateResponse, error)
 	GetTemplate(ctx context.Context, token string, id string) (TemplateResponse, error)
+	DeleteTemplate(ctx context.Context, accessToken string, id string) error
 	SearchTemplates(ctx context.Context, token string, searchrequest map[string]interface{}) (SearchTemplatesResponse, error)
 }
 
@@ -107,15 +108,18 @@ func login(ctx context.Context, url string, requestBody []byte) (LoginResponse, 
 }
 
 func (biotSdkImpl biotSdkImpl) CreateTemplate(ctx context.Context, accessToken string, request CreateTemplateRequest) (TemplateResponse, error) {
-	
+
 	var url = fmt.Sprintf("%s/%s/v1/templates", biotSdkImpl.baseUrl, settingsPrefix)
 
-	// Marshal it to JSON
 	jsonBody, _ := json.Marshal(request)
 
-	response, err := biotSdkImpl.crudTemplateHelper(ctx, accessToken, url, http.MethodPost, bytes.NewBuffer(jsonBody))
+	httpResponse, err := biotSdkImpl.crudTemplateHelper(ctx, accessToken, url, http.MethodPost, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return TemplateResponse{}, err
+	}
+	defer httpResponse.Body.Close()
 
-	return response, err
+	return getTemplateResponseBody(httpResponse)
 }
 
 func (biotSdkImpl biotSdkImpl) UpdateTemplate(ctx context.Context, accessToken string, id string, request UpdateTemplateRequest) (TemplateResponse, error) {
@@ -123,22 +127,47 @@ func (biotSdkImpl biotSdkImpl) UpdateTemplate(ctx context.Context, accessToken s
 	var url = fmt.Sprintf("%s/%s/v1/templates/%s", biotSdkImpl.baseUrl, settingsPrefix, id)
 
 	jsonBody, _ := json.Marshal(request)
-	response, err := biotSdkImpl.crudTemplateHelper(ctx, accessToken, url, http.MethodPut, bytes.NewBuffer(jsonBody))
+	httpResponse, err := biotSdkImpl.crudTemplateHelper(ctx, accessToken, url, http.MethodPut, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return TemplateResponse{}, err
+	}
+	defer httpResponse.Body.Close()
 
-	return response, err
+	return getTemplateResponseBody(httpResponse)
 }
 
 func (biotSdkImpl biotSdkImpl) GetTemplate(ctx context.Context, accessToken string, id string) (TemplateResponse, error) {
 	var url = fmt.Sprintf("%s/%s/v1/templates/%s", biotSdkImpl.baseUrl, settingsPrefix, id)
 
-	return biotSdkImpl.crudTemplateHelper(ctx, accessToken, url, http.MethodGet, nil)
+	httpResponse, err := biotSdkImpl.crudTemplateHelper(ctx, accessToken, url, http.MethodGet, nil)
+	if err != nil {
+		return TemplateResponse{}, err
+	}
+	defer httpResponse.Body.Close()
+
+	return getTemplateResponseBody(httpResponse)
 }
 
-func (biotSdkImpl biotSdkImpl) crudTemplateHelper(ctx context.Context, accessToken string, url string, method string, body io.Reader) (TemplateResponse, error) {
+func (biotSdkImpl biotSdkImpl) DeleteTemplate(ctx context.Context, accessToken string, id string) error {
+	var url = fmt.Sprintf("%s/%s/v1/templates/%s", biotSdkImpl.baseUrl, settingsPrefix, id)
+
+	httpResponse, err := biotSdkImpl.crudTemplateHelper(ctx, accessToken, url, http.MethodDelete, nil)
+	if err != nil {
+		return err
+	}
+	defer httpResponse.Body.Close()
+
+	return err
+}
+
+// Using this function requires the user to close the httpResponse body (httpResponse.Body.Close()
+// Only in the cases where the response returned with status OK (200 / 201 / 2xx...)
+// In case of errors, the body will be closed within this funciton.
+func (biotSdkImpl biotSdkImpl) crudTemplateHelper(ctx context.Context, accessToken string, url string, method string, body io.Reader) (*http.Response, error) {
 	req, requestErr := http.NewRequest(method, url, body)
 	if requestErr != nil {
 		tflog.Error(ctx, fmt.Sprintf("biotSdk: [%s] Template - failed to create request with url: [%s]", method, url))
-		return TemplateResponse{}, requestErr
+		return nil, requestErr
 	}
 
 	req.Header.Set(authorizationHeaderKey, fmt.Sprintf("Bearer %s", accessToken))
@@ -147,24 +176,29 @@ func (biotSdkImpl biotSdkImpl) crudTemplateHelper(ctx context.Context, accessTok
 	}
 
 	var httpResponse, err = httpClient.Do(req)
-	defer httpResponse.Body.Close()
 
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("biotSdk: [%s] Template - failed to call API with url: [%s]", method, url))
-		return TemplateResponse{}, err
+		return nil, err
 	}
 
 	if httpResponse.StatusCode == 404 { // NOT_FOUND
 		tflog.Error(ctx, fmt.Sprintf("biotSdk: [%s] Template - got 404 not found for url: [%s]", method, url))
-		return TemplateResponse{}, SpecificErrorCodes.NotFound
+		defer httpResponse.Body.Close()
+		return nil, SpecificErrorCodes.NotFound
 	}
 
 	if !isResponseOk(httpResponse) {
 		tflog.Error(ctx, fmt.Sprintf("biotSdk: [%s] Template  - api result with status code: [%d] with url: [%s]", method, httpResponse.StatusCode, url))
-		return TemplateResponse{}, getErrorMessage(httpResponse)
+		defer httpResponse.Body.Close()
+		return nil, getErrorMessage(httpResponse)
 	}
 
-	// Parse response body into TemplateResponse
+	return httpResponse, nil
+}
+
+// This function does NOT close the httpResponse body.
+func getTemplateResponseBody(httpResponse *http.Response) (TemplateResponse, error) {
 	var templateResponse TemplateResponse
 	if err := json.NewDecoder(httpResponse.Body).Decode(&templateResponse); err != nil {
 		return TemplateResponse{}, err
@@ -189,13 +223,13 @@ func (biotSdkImpl biotSdkImpl) SearchTemplates(ctx context.Context, accessToken 
 	req.Header.Set(authorizationHeaderKey, fmt.Sprintf("Bearer %s", accessToken))
 
 	var httpResponse, responseErr = httpClient.Do(req)
-	defer httpResponse.Body.Close()
 	if responseErr != nil {
 		return SearchTemplatesResponse{}, responseErr
 	}
+	defer httpResponse.Body.Close()
 
 	if !isResponseOk(httpResponse) {
-		return SearchTemplatesResponse{}, responseErr
+		return SearchTemplatesResponse{}, getErrorMessage(httpResponse)
 	}
 
 	// Parse response body into TemplateResponse
@@ -215,11 +249,18 @@ func getErrorMessage(response *http.Response) error {
 	var biotErrorObject map[string]interface{}
 	json.NewDecoder(response.Body).Decode(&biotErrorObject)
 
-	if msg, ok := biotErrorObject["message"].(string); ok {
-		return errors.New(msg)
+	var msg string
+	var code string
+
+	if msg, _ = biotErrorObject["message"].(string); msg == "" {
+		msg = "unknown error message"
 	}
 
-	return fmt.Errorf("unexpected error - server responded with status code: [%d])", response.StatusCode)
+	if code, _ = biotErrorObject["code"].(string); code == "" {
+		code = "unknown error code"
+	}
+
+	return fmt.Errorf("server error (status: [%d], code: [%s]): [%s]", response.StatusCode, code, msg)
 }
 
 func encodeSearchRequest(searchRequest map[string]interface{}) (string, error) {

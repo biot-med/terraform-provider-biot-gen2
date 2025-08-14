@@ -94,8 +94,13 @@ func (apiClient *APIClient) UpdateTemplate(ctx context.Context, id string, req U
 }
 
 func (apiClient *APIClient) DeleteTemplate(ctx context.Context, id string) error {
-	// Mock delete — no-op
-	return nil
+	token, err := apiClient.getAccessToken(ctx);
+
+	if err != nil {
+		return err
+	}
+
+	return apiClient.BiotSdk.DeleteTemplate(ctx, token, id);
 }
 
 /* Privage Functions: */
