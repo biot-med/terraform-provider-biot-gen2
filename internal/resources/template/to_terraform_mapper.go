@@ -162,23 +162,14 @@ func mapToTerraformNumericMetaData(ctx context.Context, numericMetaData *api.Num
 		return nil
 	}
 
-	var upperRange *types.Int64
-	if numericMetaData.UpperRange != nil {
-		val := types.Int64Value(*numericMetaData.UpperRange)
-		upperRange = &val
-	}
-
-	var lowerRange *types.Int64
-	if numericMetaData.LowerRange != nil {
-		val := types.Int64Value(*numericMetaData.LowerRange)
-		lowerRange = &val
-	}
+	upperRange := utils.Int64OrNullPtr(numericMetaData.UpperRange)
+	lowerRange := utils.Int64OrNullPtr(numericMetaData.LowerRange)
 
 	return &TerraformNumericMetaData{
-		Units:      types.StringValue(numericMetaData.Units),
+		Units:      utils.StringOrNull(numericMetaData.Units),
 		UpperRange: upperRange,
 		LowerRange: lowerRange,
-		SubType:    types.StringValue(numericMetaData.SubType),
+		SubType:    utils.StringOrNull(numericMetaData.SubType),
 	}
 }
 
