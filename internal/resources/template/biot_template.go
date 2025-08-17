@@ -70,6 +70,7 @@ func (r *BiotTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 			},
 			"analytics_db_configuration": schema.SingleNestedAttribute{
 				Optional: true,
+				Computed: true,
 				Attributes: map[string]schema.Attribute{
 					"name": schema.StringAttribute{
 						Optional: true,
@@ -130,6 +131,9 @@ func attributeSchema() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Computed: true,
+			// PlanModifiers: []planmodifier.String {
+			// 	biotplanmodifiers.CopyIDFromStateByNameStringModifier{},
+			// },
 		},
 		"display_name": schema.StringAttribute{Optional: true},
 		"phi":          schema.BoolAttribute{Optional: true},
@@ -184,6 +188,7 @@ func attributeSchema() map[string]schema.Attribute {
 
 		"analytics_db_configuration": schema.SingleNestedAttribute{
 			Optional: true,
+			Computed: true,
 			Attributes: map[string]schema.Attribute{
 				"name": schema.StringAttribute{Optional: true},
 			},
@@ -197,9 +202,6 @@ func attributeSchema() map[string]schema.Attribute {
 					"name":         schema.StringAttribute{Required: true},
 					"display_name": schema.StringAttribute{Optional: true},
 				},
-			},
-			PlanModifiers: []planmodifier.Set{
-				biotplanmodifiers.CopyIDFromStateByNameSetModifier{},
 			},
 		},
 	}

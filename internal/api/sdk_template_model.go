@@ -100,7 +100,7 @@ type BaseAttributeResponse struct {
 type CreateTemplateAttribute struct {
 	BaseAttribute
 	Value                 interface{}            `json:"value"`
-	OrganizationSelection *OrganizationSelection `json:"organizationSelection,omitempty"`
+	OrganizationSelection *OrganizationSelection `json:"organizationSelectionConfiguration,omitempty"`
 }
 
 type TemplateAttributeResponse struct {
