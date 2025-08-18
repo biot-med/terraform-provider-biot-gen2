@@ -94,7 +94,7 @@ func (p *BiotProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 		return
 	}
 
-	client := api.NewAPIClient(api.NewBiotSdkImpl(config.BaseURL))
+	client := api.NewAPIClient(api.NewBiotSdkImpl(config.BaseURL), config.ServiceID, config.ServiceSecretKey)
 
 	// Example client configuration for data sources and resources
 	resp.DataSourceData = client

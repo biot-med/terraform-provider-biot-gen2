@@ -8,11 +8,16 @@ import (
 
 type APIClient struct{
 	BiotSdk BiotSdk
+	serviceId string
+	serviceSecretKey string
 }
 
-func NewAPIClient(bioSdk BiotSdk) *APIClient {
-	// TODO: Add service id + secret key.
-	return &APIClient{BiotSdk: bioSdk}
+func NewAPIClient(bioSdk BiotSdk, serviceId string, serviceSecretKey string) *APIClient {
+	return &APIClient{
+		BiotSdk:          bioSdk,
+		serviceId:        serviceId,
+		serviceSecretKey: serviceSecretKey,
+	}
 }
 
 func (apiClient *APIClient) CreateTemplate(ctx context.Context, req CreateTemplateRequest) (TemplateResponse, error) {
@@ -107,7 +112,7 @@ func (apiClient *APIClient) DeleteTemplate(ctx context.Context, id string) error
 
 func (apiClient *APIClient) getAccessToken(ctx context.Context) (string, error) {
 	// TODO: Change to login as service with service id + key.
-	response, err := apiClient.BiotSdk.LoginWithCredentials(ctx, "tzvika@biot-med.com", "Aa123456");
+	response, err := apiClient.BiotSdk.LoginWithCredentials(ctx, apiClient.serviceId, apiClient.serviceSecretKey);
 
 	if err != nil {
 		return "", err

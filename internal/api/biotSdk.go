@@ -251,6 +251,7 @@ func getErrorMessage(response *http.Response) error {
 
 	var msg string
 	var code string
+	var traceId string
 
 	if msg, _ = biotErrorObject["message"].(string); msg == "" {
 		msg = "unknown error message"
@@ -260,7 +261,11 @@ func getErrorMessage(response *http.Response) error {
 		code = "unknown error code"
 	}
 
-	return fmt.Errorf("server error (status: [%d], code: [%s]): [%s]", response.StatusCode, code, msg)
+	if traceId, _ = biotErrorObject["traceId"].(string); traceId == "" {
+		traceId = "unknown trade-id"
+	}
+
+	return fmt.Errorf("server error (status: [%d], code: [%s], traceId: [%s]): [%s]", response.StatusCode, code, traceId, msg)
 }
 
 func encodeSearchRequest(searchRequest map[string]interface{}) (string, error) {
