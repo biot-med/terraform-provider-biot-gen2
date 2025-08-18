@@ -10,15 +10,15 @@ import (
 )
 
 func mapTemplateResponseToTerrformModel(ctx context.Context, resp api.TemplateResponse) TerraformTemplate {
-	builtInAttrs := []TerraformAttribute{}
+	builtInAttrs := []TerraformBuiltinAttribute{}
 
 	for _, attr := range resp.BuiltInAttributes {
-		builtInAttrs = append(builtInAttrs, mapAttributeResponseToTerrformAttribute(ctx, attr))
+		builtInAttrs = append(builtInAttrs, mapBuiltinAttributeResponseToTerraformAttribute(ctx, attr))
 	}
 
-	customAttrs := []TerraformAttribute{}
+	customAttrs := []TerraformCustomAttribute{}
 	for _, attr := range resp.CustomAttributes {
-		customAttrs = append(customAttrs, mapAttributeResponseToTerrformAttribute(ctx, attr))
+		customAttrs = append(customAttrs, mapCustomAttributeResponseToTerraformAttribute(ctx, attr))
 	}
 
 	templateAttrs := []TerraformTemplateAttribute{}
@@ -51,8 +51,26 @@ func mapTemplateResponseToTerrformModel(ctx context.Context, resp api.TemplateRe
 	return template
 }
 
-func mapAttributeResponseToTerrformAttribute(ctx context.Context, attr api.BaseAttributeResponse) TerraformAttribute {
-	return TerraformAttribute{
+func mapBuiltinAttributeResponseToTerraformAttribute(ctx context.Context, attr api.BuiltinAttributeResponse) TerraformBuiltinAttribute {
+	base := mapAttributeResponseToTerrformAttribute(ctx, attr.BaseAttributeResponse)
+	
+	return TerraformBuiltinAttribute{
+		BaseTerraformAttribute: base,
+		AnalyticsDbConfiguration: mapToTerraformAnalyticsDbConfiguration(ctx, attr.AnalyticsDbConfiguration),
+	}
+}
+
+func mapCustomAttributeResponseToTerraformAttribute(ctx context.Context, attr api.CustomAttributeResponse) TerraformCustomAttribute {
+	base := mapAttributeResponseToTerrformAttribute(ctx, attr.BaseAttributeResponse)
+	
+	return TerraformCustomAttribute{
+		BaseTerraformAttribute: base,
+		AnalyticsDbConfiguration: mapToTerraformAnalyticsDbConfiguration(ctx, attr.AnalyticsDbConfiguration),
+	}
+}
+
+func mapAttributeResponseToTerrformAttribute(ctx context.Context, attr api.BaseAttributeResponse) BaseTerraformAttribute {
+	return BaseTerraformAttribute{
 		Name:                     types.StringValue(attr.Name),
 		BasePath:                 utils.StringOrNullPtr(attr.BasePath),
 		ID:                       types.StringValue(attr.ID),
@@ -61,7 +79,6 @@ func mapAttributeResponseToTerrformAttribute(ctx context.Context, attr api.BaseA
 		Type:                     types.StringValue(attr.Type),
 		Category:                 mapToTerraformCategory(ctx, attr.Category),
 		SelectableValues:         mapToTerraformSelectableValues(ctx, attr.Type, attr.SelectableValues),
-		AnalyticsDbConfiguration: mapToTerraformAnalyticsDbConfiguration(ctx, attr.AnalyticsDbConfiguration),
 		ReferenceConfiguration:   mapToTerraformReferenceConfiguration(ctx, attr.ReferenceConfiguration),
 		LinkConfiguration:        mapToTerraformLinkConfiguration(ctx, attr.LinkConfiguration),
 		Validation:               mapToTerraformValidation(ctx, attr.Validation),
@@ -73,9 +90,9 @@ func mapTemplateAttributeResponseToTerrformAttribute(ctx context.Context, attr a
 	base := mapAttributeResponseToTerrformAttribute(ctx, attr.BaseAttributeResponse)
 
 	return TerraformTemplateAttribute{
-		TerraformAttribute:    base,
-		Value:                 utils.InterfaceToJsonString(ctx, "value", attr.Value),
-		OrganizationSelection: mapToTerraformOrganizationSelection(ctx, attr.OrganizationSelection),
+		BaseTerraformAttribute: base,
+		Value:                	utils.InterfaceToJsonString(ctx, "value", attr.Value),
+		OrganizationSelection: 	mapToTerraformOrganizationSelection(ctx, attr.OrganizationSelection),
 	}
 }
 
@@ -169,7 +186,7 @@ func mapToTerraformNumericMetaData(ctx context.Context, numericMetaData *api.Num
 		Units:      utils.StringOrNullPtr(numericMetaData.Units),
 		UpperRange: upperRange,
 		LowerRange: lowerRange,
-		SubType:    utils.StringOrNull(numericMetaData.SubType),
+		SubType:    utils.StringOrNullPtr(numericMetaData.SubType),
 	}
 }
 

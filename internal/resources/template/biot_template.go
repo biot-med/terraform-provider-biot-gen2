@@ -83,21 +83,12 @@ func (r *BiotTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 			"parent_template_id": schema.StringAttribute{
 				Optional: true,
 			},
-			// TODO: Do we want ? is it helping the user in any way to have them ? (same todo in to_terraform_mapper and sdk_template_model)
-			// "removable": schema.BoolAttribute{
-			// 	Computed: true,
-			// },
-			// "creation_time": schema.StringAttribute{
-			// 	Computed: true,
-			// },
-			// "last_modified_time": schema.StringAttribute{
-			// 	Computed: true,
-			// },
 			"builtin_attributes": schema.SetNestedAttribute{
-				Optional:    true,
+				Optional: true,
+				Computed: true,
 				Description: "Builtin attributes associated with the template.",
 				NestedObject: schema.NestedAttributeObject{
-					Attributes: attributeSchema(),
+					Attributes: builtinAttributeSchema(),
 				},
 				PlanModifiers: []planmodifier.Set{
 					biotplanmodifiers.CopyIDFromStateByNameSetModifier{},
@@ -107,14 +98,15 @@ func (r *BiotTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 				Optional:    true,
 				Description: "Custom attributes associated with the template.",
 				NestedObject: schema.NestedAttributeObject{
-					Attributes: attributeSchema(),
+					Attributes: customAttributeSchema(),
 				},
 				PlanModifiers: []planmodifier.Set{
 					biotplanmodifiers.CopyIDFromStateByNameSetModifier{},
 				},
 			},
 			"template_attributes": schema.SetNestedAttribute{
-				Optional:    true,
+				Optional: true,
+				Computed: true,
 				Description: "Template attributes associated with the template.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: templateAttributeSchema(),
@@ -131,9 +123,7 @@ func attributeSchema() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Computed: true,
-			// PlanModifiers: []planmodifier.String {
-			// 	biotplanmodifiers.CopyIDFromStateByNameStringModifier{},
-			// },
+			// Plan-modifier is implemeneted from the "parent" attribute.
 		},
 		"display_name": schema.StringAttribute{Optional: true},
 		"phi":          schema.BoolAttribute{Optional: true},
@@ -186,14 +176,6 @@ func attributeSchema() map[string]schema.Attribute {
 			},
 		},
 
-		"analytics_db_configuration": schema.SingleNestedAttribute{
-			Optional: true,
-			Computed: true,
-			Attributes: map[string]schema.Attribute{
-				"name": schema.StringAttribute{Optional: true},
-			},
-		},
-
 		"selectable_values": schema.SetNestedAttribute{
 			Optional: true,
 			NestedObject: schema.NestedAttributeObject{
@@ -205,6 +187,42 @@ func attributeSchema() map[string]schema.Attribute {
 			},
 		},
 	}
+}
+
+func builtinAttributeSchema() map[string]schema.Attribute {
+	base := attributeSchema()
+
+	// VERY IMPORTANT: Clone the base attribute map to avoid mutating the original
+	attrSchema := make(map[string]schema.Attribute, len(base)+2)
+	maps.Copy(attrSchema, base)
+
+	attrSchema["analytics_db_configuration"] = schema.SingleNestedAttribute{
+		Optional: true,
+		Computed: true,
+		Attributes: map[string]schema.Attribute{
+			"name": schema.StringAttribute{Optional: true},
+		},
+	}
+
+	return attrSchema
+}
+
+func customAttributeSchema() map[string]schema.Attribute {
+	base := attributeSchema()
+
+	// VERY IMPORTANT: Clone the base attribute map to avoid mutating the original
+	attrSchema := make(map[string]schema.Attribute, len(base)+2)
+	maps.Copy(attrSchema, base)
+
+	attrSchema["analytics_db_configuration"] = schema.SingleNestedAttribute{
+		Optional: true,
+		Computed: true,
+		Attributes: map[string]schema.Attribute{
+			"name": schema.StringAttribute{Optional: true},
+		},
+	}
+
+	return attrSchema
 }
 
 func templateAttributeSchema() map[string]schema.Attribute {
@@ -299,7 +317,7 @@ func (r *BiotTemplateResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	createRequest := MapTerraformTemplateToCreateRequest(plan)
+	createRequest := MapTerraformTemplateToCreateRequest(ctx, plan)
 	response, err := r.client.CreateTemplate(ctx, createRequest)
 
 	if err != nil {
@@ -318,7 +336,7 @@ func (r *BiotTemplateResource) Update(ctx context.Context, req resource.UpdateRe
 	req.Plan.Get(ctx, &plan)
 	req.State.Get(ctx, &state)
 
-	updateRequest := MapTerraformTemplateToUpdateRequest(plan)
+	updateRequest := MapTerraformTemplateToUpdateRequest(ctx, plan)
 	response, err := r.client.UpdateTemplate(ctx, state.ID.ValueString(), updateRequest)
 
 	if err != nil {

@@ -11,7 +11,7 @@ type BaseTemplate struct {
 type UpdateTemplateRequest struct {
 	BaseTemplate
 	ParentTemplateID   *string                   `json:"parentTemplateId"`
-	BuiltInAttributes  []BaseAttribute           `json:"builtInAttributes"`
+	BuiltInAttributes  []BuiltinAttributeRequest           `json:"builtInAttributes"`
 	CustomAttributes   []CustomAttributeRequest  `json:"customAttributes"`
 	TemplateAttributes []CreateTemplateAttribute `json:"templateAttributes"`
 }
@@ -20,7 +20,7 @@ type CreateTemplateRequest struct {
 	BaseTemplate
 	EntityType         string                    `json:"entityType"`
 	ParentTemplateID   *string                   `json:"parentTemplateId"`
-	BuiltInAttributes  []BaseAttribute           `json:"builtInAttributes"`
+	BuiltInAttributes  []BuiltinAttributeRequest `json:"builtInAttributes"`
 	CustomAttributes   []CustomAttributeRequest  `json:"customAttributes"`
 	TemplateAttributes []CreateTemplateAttribute `json:"templateAttributes"`
 }
@@ -32,11 +32,11 @@ type TemplateResponse struct {
 	// Removable          bool                        `json:"removable"`
 	// CreationTime       string                      `json:"creationTime"`
 	// LastModifiedTime   string                      `json:"lastModifiedTime"`
-	EntityTypeName     string                      `json:"entityTypeName"`
-	ParentTemplate     *ParentTemplate             `json:"parentTemplate"`
-	BuiltInAttributes  []BaseAttributeResponse     `json:"builtInAttributes"`
-	CustomAttributes   []BaseAttributeResponse     `json:"customAttributes"`
-	TemplateAttributes []TemplateAttributeResponse `json:"templateAttributes"`
+	EntityTypeName     string                      			`json:"entityTypeName"`
+	ParentTemplate     *ParentTemplate            			`json:"parentTemplate"`
+	BuiltInAttributes  []BuiltinAttributeResponse     	`json:"builtInAttributes"`
+	CustomAttributes   []CustomAttributeResponse     	`json:"customAttributes"`
+	TemplateAttributes []TemplateAttributeResponse 			`json:"templateAttributes"`
 }
 
 // ********* All below are for search: *****************
@@ -80,13 +80,18 @@ type BaseAttribute struct {
 	NumericMetaData          *NumericMetaData          `json:"numericMetaData"`
 	Type                     string                    `json:"type"`
 	SelectableValues         []SelectableValue         `json:"selectableValues"`
-	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
 	ValidationMetadata       *ValidationMetadata       `json:"validationMetadata,omitempty"`
 	ReadOnly                 bool                      `json:"readOnly,omitempty"`
 }
 
+type BuiltinAttributeRequest struct {
+	BaseAttribute
+	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
+}
+
 type CustomAttributeRequest struct {
 	BaseAttribute
+	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
 	Category string `json:"category"`
 }
 
@@ -95,6 +100,16 @@ type BaseAttributeResponse struct {
 	Type     string    `json:"type"`
 	Name     string    `json:"name"`
 	Category *Category `json:"category"`
+}
+
+type BuiltinAttributeResponse struct {
+	BaseAttributeResponse
+	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
+}
+
+type CustomAttributeResponse struct {
+	BaseAttributeResponse
+	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
 }
 
 type CreateTemplateAttribute struct {
@@ -151,7 +166,7 @@ type NumericMetaData struct {
 	Units      *string `json:"units"`
 	UpperRange *int64  `json:"upperRange"`
 	LowerRange *int64  `json:"lowerRange"`
-	SubType    string  `json:"subType"`
+	SubType    *string  `json:"subType"`
 }
 
 type Category struct {

@@ -1,6 +1,8 @@
 package template
 
-import "github.com/hashicorp/terraform-plugin-framework/types"
+import (
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 type TerraformTemplate struct {
 	ID                       types.String                       `tfsdk:"id"`
@@ -11,8 +13,8 @@ type TerraformTemplate struct {
 	EntityTypeName           types.String                       `tfsdk:"entity_type"`
 	AnalyticsDbConfiguration *TerraformAnalyticsDbConfiguration `tfsdk:"analytics_db_configuration"`
 	ParentTemplateID         types.String                       `tfsdk:"parent_template_id"`
-	BuiltInAttributes        []TerraformAttribute               `tfsdk:"builtin_attributes"`
-	CustomAttributes         []TerraformAttribute               `tfsdk:"custom_attributes"`
+	BuiltInAttributes        []TerraformBuiltinAttribute               `tfsdk:"builtin_attributes"`
+	CustomAttributes         []TerraformCustomAttribute               `tfsdk:"custom_attributes"`
 	TemplateAttributes       []TerraformTemplateAttribute       `tfsdk:"template_attributes"`
 	// TODO: Do we want ? is it helping the user in any way to have them ? (same todo in to_terraform_mapper and sdk_template_model and resource schema)
 	// Removable                types.Bool                               `tfsdk:"removable"`
@@ -20,7 +22,7 @@ type TerraformTemplate struct {
 	// LastModifiedTime         types.String                             `tfsdk:"last_modified_time"`
 }
 
-type TerraformAttribute struct {
+type BaseTerraformAttribute struct {
 	Name                     types.String                       `tfsdk:"name"`
 	BasePath                 types.String                       `tfsdk:"base_path"`
 	ID                       types.String                       `tfsdk:"id"`
@@ -33,11 +35,22 @@ type TerraformAttribute struct {
 	Type                     types.String                       `tfsdk:"type"`
 	Category                 types.String                       `tfsdk:"category"`
 	SelectableValues         []TerraformSelectableValue         `tfsdk:"selectable_values"`
+}
+
+type TerraformBuiltinAttribute struct {
+	BaseTerraformAttribute
+
+	AnalyticsDbConfiguration *TerraformAnalyticsDbConfiguration `tfsdk:"analytics_db_configuration"`
+}
+
+type TerraformCustomAttribute struct {
+	BaseTerraformAttribute
+
 	AnalyticsDbConfiguration *TerraformAnalyticsDbConfiguration `tfsdk:"analytics_db_configuration"`
 }
 
 type TerraformTemplateAttribute struct {
-	TerraformAttribute
+	BaseTerraformAttribute
 
 	Value                 types.String                    `tfsdk:"value_json"`
 	OrganizationSelection *TerraformOrganizationSelection `tfsdk:"organization_selection"`

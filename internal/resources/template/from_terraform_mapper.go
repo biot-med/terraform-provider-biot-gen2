@@ -1,46 +1,47 @@
 package template
 
 import (
+	"context"
 	"encoding/json"
 
 	"biot.com/terraform-provider-biot/internal/api"
 	"biot.com/terraform-provider-biot/internal/utils"
 )
 
-func MapTerraformTemplateToCreateRequest(t TerraformTemplate) api.CreateTemplateRequest {
+func MapTerraformTemplateToCreateRequest(ctx context.Context, t TerraformTemplate) api.CreateTemplateRequest {
 	return api.CreateTemplateRequest{
 		BaseTemplate: api.BaseTemplate{
 			DisplayName:              utils.StringOrEmpty(t.DisplayName),
 			Name:                     utils.StringOrEmpty(t.Name),
 			Description:              utils.StringOrNilPtr(t.Description),
 			OwnerOrganizationID:      utils.StringOrNilPtr(t.OwnerOrganizationID),
-			AnalyticsDbConfiguration: mapAnalyticsDbConfig(t.AnalyticsDbConfiguration),
+			AnalyticsDbConfiguration: mapAnalyticsDbConfig(ctx, t.AnalyticsDbConfiguration),
 		},
 		EntityType:         utils.StringOrEmpty(t.EntityTypeName),
 		ParentTemplateID:   utils.StringOrNilPtr(t.ParentTemplateID),
-		BuiltInAttributes:  mapBaseAttributes(t.BuiltInAttributes),
-		CustomAttributes:   mapCustomAttributes(t.CustomAttributes),
-		TemplateAttributes: mapTemplateAttributes(t.TemplateAttributes),
+		BuiltInAttributes:  mapBuiltinAttributes(ctx, t.BuiltInAttributes),
+		CustomAttributes:   mapCustomAttributes(ctx, t.CustomAttributes),
+		TemplateAttributes: mapTemplateAttributes(ctx, t.TemplateAttributes),
 	}
 }
 
-func MapTerraformTemplateToUpdateRequest(t TerraformTemplate) api.UpdateTemplateRequest {
+func MapTerraformTemplateToUpdateRequest(ctx context.Context, t TerraformTemplate) api.UpdateTemplateRequest {
 	return api.UpdateTemplateRequest{
 		BaseTemplate: api.BaseTemplate{
 			DisplayName:              utils.StringOrEmpty(t.DisplayName),
 			Name:                     utils.StringOrEmpty(t.Name),
 			Description:              utils.StringOrNilPtr(t.Description),
 			OwnerOrganizationID:      utils.StringOrNilPtr(t.OwnerOrganizationID),
-			AnalyticsDbConfiguration: mapAnalyticsDbConfig(t.AnalyticsDbConfiguration),
+			AnalyticsDbConfiguration: mapAnalyticsDbConfig(ctx, t.AnalyticsDbConfiguration),
 		},
 		ParentTemplateID:   utils.StringOrNilPtr(t.ParentTemplateID),
-		BuiltInAttributes:  mapBaseAttributes(t.BuiltInAttributes),
-		CustomAttributes:   mapCustomAttributes(t.CustomAttributes),
-		TemplateAttributes: mapTemplateAttributes(t.TemplateAttributes),
+		BuiltInAttributes:  mapBuiltinAttributes(ctx, t.BuiltInAttributes),
+		CustomAttributes:   mapCustomAttributes(ctx, t.CustomAttributes),
+		TemplateAttributes: mapTemplateAttributes(ctx, t.TemplateAttributes),
 	}
 }
 
-func mapAnalyticsDbConfig(c *TerraformAnalyticsDbConfiguration) *api.AnalyticsDbConfiguration {
+func mapAnalyticsDbConfig(ctx context.Context, c *TerraformAnalyticsDbConfiguration) *api.AnalyticsDbConfiguration {
 	if c == nil || c.Name.IsNull() || c.Name.IsUnknown() {
 		return nil
 	}
@@ -50,15 +51,7 @@ func mapAnalyticsDbConfig(c *TerraformAnalyticsDbConfiguration) *api.AnalyticsDb
 	}
 }
 
-func mapBaseAttributes(attrs []TerraformAttribute) []api.BaseAttribute {
-	result := []api.BaseAttribute{}
-	for _, attr := range attrs {
-		result = append(result, mapBaseAttribute(attr))
-	}
-	return result
-}
-
-func mapBaseAttribute(attr TerraformAttribute) api.BaseAttribute {
+func mapBaseAttribute(ctx context.Context, attr BaseTerraformAttribute) api.BaseAttribute {
 	return api.BaseAttribute{
 		Name:                     attr.Name.ValueString(),
 		BasePath:                 utils.StringOrNilPtr(attr.BasePath),
@@ -71,22 +64,35 @@ func mapBaseAttribute(attr TerraformAttribute) api.BaseAttribute {
 		NumericMetaData:          mapNumericMetaData(attr.NumericMetaData),
 		Type:                     attr.Type.ValueString(),
 		SelectableValues:         mapSelectableValues(attr.Name.ValueString(), attr.SelectableValues),
-		AnalyticsDbConfiguration: mapAnalyticsDbConfig(attr.AnalyticsDbConfiguration),
+		// AnalyticsDbConfiguration: mapAnalyticsDbConfig(ctx, attr.AnalyticsDbConfiguration),
 	}
 }
 
-func mapCustomAttributes(attrs []TerraformAttribute) []api.CustomAttributeRequest {
+func mapCustomAttributes(ctx context.Context, attrs []TerraformCustomAttribute) []api.CustomAttributeRequest {
 	result := []api.CustomAttributeRequest{}
 	for _, attr := range attrs {
 		result = append(result, api.CustomAttributeRequest{
-			BaseAttribute: mapBaseAttribute(attr),
-			Category:      attr.Category.ValueString(), // extract Go string
+			BaseAttribute: mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
+			Category:      attr.Category.ValueString(),
+			AnalyticsDbConfiguration: mapAnalyticsDbConfig(ctx, attr.AnalyticsDbConfiguration),
 		})
 	}
 	return result
 }
 
-func mapTemplateAttributes(attrs []TerraformTemplateAttribute) []api.CreateTemplateAttribute {
+func mapBuiltinAttributes(ctx context.Context, attrs []TerraformBuiltinAttribute) []api.BuiltinAttributeRequest {
+	result := []api.BuiltinAttributeRequest{}
+	for _, attr := range attrs {
+		result = append(result, api.BuiltinAttributeRequest{
+			BaseAttribute: mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
+			AnalyticsDbConfiguration: mapAnalyticsDbConfig(ctx, attr.AnalyticsDbConfiguration),
+		})
+	}
+	return result
+}
+
+func mapTemplateAttributes(ctx context.Context, attrs []TerraformTemplateAttribute) []api.CreateTemplateAttribute {
+
 	result := make([]api.CreateTemplateAttribute, 0, len(attrs))
 
 	for _, attr := range attrs {
@@ -107,7 +113,7 @@ func mapTemplateAttributes(attrs []TerraformTemplateAttribute) []api.CreateTempl
 		}
 
 		result = append(result, api.CreateTemplateAttribute{
-			BaseAttribute:         mapBaseAttribute(attr.TerraformAttribute),
+			BaseAttribute:         mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
 			Value:                 value,
 			OrganizationSelection: mapOrgSelection(attr.OrganizationSelection),
 		})
@@ -190,7 +196,7 @@ func mapNumericMetaData(numericMetaData *TerraformNumericMetaData) *api.NumericM
 		Units:      utils.StringOrNilPtr(numericMetaData.Units),
 		UpperRange: upperRange,
 		LowerRange: lowerRange,
-		SubType:    utils.StringOrEmpty(numericMetaData.SubType),
+		SubType:    utils.StringOrNilPtr(numericMetaData.SubType),
 	}
 }
 
