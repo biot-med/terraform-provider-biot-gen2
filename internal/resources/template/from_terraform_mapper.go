@@ -64,7 +64,6 @@ func mapBaseAttribute(ctx context.Context, attr BaseTerraformAttribute) api.Base
 		NumericMetaData:          mapNumericMetaData(attr.NumericMetaData),
 		Type:                     attr.Type.ValueString(),
 		SelectableValues:         mapSelectableValues(attr.Name.ValueString(), attr.SelectableValues),
-		// AnalyticsDbConfiguration: mapAnalyticsDbConfig(ctx, attr.AnalyticsDbConfiguration),
 	}
 }
 

@@ -28,10 +28,6 @@ type CreateTemplateRequest struct {
 type TemplateResponse struct {
 	BaseTemplate
 	ID string `json:"id"`
-	// TODO: Do we want ? (same todo in to_terraform_mapper and resource schema and TerraformTemplate)
-	// Removable          bool                        `json:"removable"`
-	// CreationTime       string                      `json:"creationTime"`
-	// LastModifiedTime   string                      `json:"lastModifiedTime"`
 	EntityTypeName     string                      			`json:"entityTypeName"`
 	ParentTemplate     *ParentTemplate            			`json:"parentTemplate"`
 	BuiltInAttributes  []BuiltinAttributeResponse     	`json:"builtInAttributes"`

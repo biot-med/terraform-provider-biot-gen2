@@ -16,10 +16,6 @@ type TerraformTemplate struct {
 	BuiltInAttributes        []TerraformBuiltinAttribute               `tfsdk:"builtin_attributes"`
 	CustomAttributes         []TerraformCustomAttribute               `tfsdk:"custom_attributes"`
 	TemplateAttributes       []TerraformTemplateAttribute       `tfsdk:"template_attributes"`
-	// TODO: Do we want ? is it helping the user in any way to have them ? (same todo in to_terraform_mapper and sdk_template_model and resource schema)
-	// Removable                types.Bool                               `tfsdk:"removable"`
-	// CreationTime             types.String                             `tfsdk:"creation_time"`
-	// LastModifiedTime         types.String                             `tfsdk:"last_modified_time"`
 }
 
 type BaseTerraformAttribute struct {

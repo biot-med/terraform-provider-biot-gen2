@@ -282,7 +282,6 @@ func (r *BiotTemplateResource) Read(ctx context.Context, req resource.ReadReques
 	// 	return
 	// }
 
-	// Read current local state, throws error if failed to load state.
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

@@ -41,11 +41,6 @@ func mapTemplateResponseToTerrformModel(ctx context.Context, resp api.TemplateRe
 		BuiltInAttributes:  builtInAttrs,
 		CustomAttributes:   customAttrs,
 		TemplateAttributes: templateAttrs,
-
-		// TODO: Do we need the 3 below  ?? (same todo in resource schema and sdk_template_model)
-		// Removable:                resp.Removable,
-		// CreationTime:             resp.CreationTime,
-		// LastModifiedTime:         resp.LastModifiedTime,
 	}
 
 	return template
