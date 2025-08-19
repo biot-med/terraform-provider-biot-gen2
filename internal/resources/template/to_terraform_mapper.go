@@ -193,7 +193,7 @@ func mapToTerraformParentTemplateID(ctx context.Context, parentTemplate *api.Par
 }
 
 func mapToTerraformOrganizationSelection(ctx context.Context, organizationSelection *api.OrganizationSelection) *TerraformOrganizationSelection {
-	if organizationSelection == nil {
+	if organizationSelection == nil || !organizationSelection.Allowed {
 		return nil
 	}
 
