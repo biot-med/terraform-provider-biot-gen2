@@ -11,7 +11,7 @@ type BaseTemplate struct {
 type UpdateTemplateRequest struct {
 	BaseTemplate
 	ParentTemplateID   *string                   `json:"parentTemplateId"`
-	BuiltInAttributes  []BuiltinAttributeRequest           `json:"builtInAttributes"`
+	BuiltInAttributes  []BuiltinAttributeRequest `json:"builtInAttributes"`
 	CustomAttributes   []CustomAttributeRequest  `json:"customAttributes"`
 	TemplateAttributes []CreateTemplateAttribute `json:"templateAttributes"`
 }
@@ -27,12 +27,12 @@ type CreateTemplateRequest struct {
 
 type TemplateResponse struct {
 	BaseTemplate
-	ID string `json:"id"`
-	EntityTypeName     string                      		`json:"entityTypeName"`
-	ParentTemplate     *ParentTemplate            		`json:"parentTemplate"`
-	BuiltInAttributes  []BuiltinAttributeResponse     	`json:"builtInAttributes"`
-	CustomAttributes   []CustomAttributeResponse     	`json:"customAttributes"`
-	TemplateAttributes []TemplateAttributeResponse 		`json:"templateAttributes"`
+	ID                 string                      `json:"id"`
+	EntityTypeName     string                      `json:"entityTypeName"`
+	ParentTemplate     *ParentTemplate             `json:"parentTemplate"`
+	BuiltInAttributes  []BuiltinAttributeResponse  `json:"builtInAttributes"`
+	CustomAttributes   []CustomAttributeResponse   `json:"customAttributes"`
+	TemplateAttributes []TemplateAttributeResponse `json:"templateAttributes"`
 }
 
 // ********* All below are for search: *****************
@@ -65,19 +65,19 @@ type PageMetadata struct {
 /* Template DTO Models */
 
 type BaseAttribute struct {
-	Name                     string                    `json:"name"`
-	BasePath                 *string                   `json:"basePath"`
-	ID                       string                    `json:"id"`
-	DisplayName              string                    `json:"displayName"`
-	Phi                      bool                      `json:"phi"`
-	ReferenceConfiguration   *ReferenceConfiguration   `json:"referenceConfiguration"`
-	LinkConfiguration        *LinkConfiguration        `json:"linkConfiguration"`
-	Validation               *Validation               `json:"validation"`
-	NumericMetaData          *NumericMetaData          `json:"numericMetaData"`
-	Type                     string                    `json:"type"`
-	SelectableValues         []SelectableValue         `json:"selectableValues"`
-	ValidationMetadata       *ValidationMetadata       `json:"validationMetadata,omitempty"`
-	ReadOnly                 bool                      `json:"readOnly,omitempty"`
+	Name                   string                  `json:"name"`
+	BasePath               *string                 `json:"basePath"`
+	ID                     string                  `json:"id"`
+	DisplayName            string                  `json:"displayName"`
+	Phi                    bool                    `json:"phi"`
+	ReferenceConfiguration *ReferenceConfiguration `json:"referenceConfiguration"`
+	LinkConfiguration      *LinkConfiguration      `json:"linkConfiguration"`
+	Validation             *Validation             `json:"validation"`
+	NumericMetaData        *NumericMetaData        `json:"numericMetaData"`
+	Type                   string                  `json:"type"`
+	SelectableValues       []SelectableValue       `json:"selectableValues"`
+	ValidationMetadata     *ValidationMetadata     `json:"validationMetadata,omitempty"`
+	ReadOnly               bool                    `json:"readOnly,omitempty"`
 }
 
 type BuiltinAttributeRequest struct {
@@ -88,7 +88,7 @@ type BuiltinAttributeRequest struct {
 type CustomAttributeRequest struct {
 	BaseAttribute
 	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
-	Category string `json:"category"`
+	Category                 string                    `json:"category"`
 }
 
 type BaseAttributeResponse struct {
@@ -162,7 +162,7 @@ type NumericMetaData struct {
 	Units      *string `json:"units"`
 	UpperRange *int64  `json:"upperRange"`
 	LowerRange *int64  `json:"lowerRange"`
-	SubType    *string  `json:"subType"`
+	SubType    *string `json:"subType"`
 }
 
 type Category struct {
