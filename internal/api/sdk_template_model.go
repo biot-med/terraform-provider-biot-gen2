@@ -10,19 +10,19 @@ type BaseTemplate struct {
 
 type UpdateTemplateRequest struct {
 	BaseTemplate
-	ParentTemplateID   *string                   `json:"parentTemplateId"`
-	BuiltInAttributes  []BuiltinAttributeRequest `json:"builtInAttributes"`
-	CustomAttributes   []CustomAttributeRequest  `json:"customAttributes"`
-	TemplateAttributes []CreateTemplateAttribute `json:"templateAttributes"`
+	ParentTemplateID   *string                    `json:"parentTemplateId"`
+	BuiltInAttributes  []BuiltinAttributeRequest  `json:"builtInAttributes"`
+	CustomAttributes   []CustomAttributeRequest   `json:"customAttributes"`
+	TemplateAttributes []TemplateAttributeRequest `json:"templateAttributes"`
 }
 
 type CreateTemplateRequest struct {
 	BaseTemplate
-	EntityType         string                    `json:"entityType"`
-	ParentTemplateID   *string                   `json:"parentTemplateId"`
-	BuiltInAttributes  []BuiltinAttributeRequest `json:"builtInAttributes"`
-	CustomAttributes   []CustomAttributeRequest  `json:"customAttributes"`
-	TemplateAttributes []CreateTemplateAttribute `json:"templateAttributes"`
+	EntityType         string                     `json:"entityType"`
+	ParentTemplateID   *string                    `json:"parentTemplateId"`
+	BuiltInAttributes  []BuiltinAttributeRequest  `json:"builtInAttributes"`
+	CustomAttributes   []CustomAttributeRequest   `json:"customAttributes"`
+	TemplateAttributes []TemplateAttributeRequest `json:"templateAttributes"`
 }
 
 type TemplateResponse struct {
@@ -108,10 +108,10 @@ type CustomAttributeResponse struct {
 	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
 }
 
-type CreateTemplateAttribute struct {
+type TemplateAttributeRequest struct {
 	BaseAttribute
-	Value                 interface{}            `json:"value"`
-	OrganizationSelection *OrganizationSelection `json:"organizationSelectionConfiguration,omitempty"`
+	Value                              interface{}                         `json:"value"`
+	OrganizationSelectionConfiguration *OrganizationSelectionConfiguration `json:"organizationSelectionConfiguration,omitempty"`
 }
 
 type TemplateAttributeResponse struct {
@@ -177,7 +177,6 @@ type SelectableValue struct {
 }
 
 type OrganizationSelection struct {
-	Allowed       bool                                `json:"allowed"`
 	Configuration *OrganizationSelectionConfiguration `json:"configuration"`
 }
 

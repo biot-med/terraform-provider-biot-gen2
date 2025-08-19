@@ -104,15 +104,9 @@ type TerraformSelectableValue struct {
 }
 
 type TerraformOrganizationSelection struct {
-	Allowed       types.Bool                                   `tfsdk:"allowed"`
-	Configuration *TerraformOrganizationSelectionConfiguration `tfsdk:"configuration"`
-}
-
-type TerraformOrganizationSelectionConfiguration struct {
 	Selected []TerraformIDWrapper `tfsdk:"selected"`
 	All      types.Bool           ` tfsdk:"all"`
 }
-
 type TerraformIDWrapper struct {
 	ID types.String `tfsdk:"id"`
 }

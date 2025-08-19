@@ -193,24 +193,13 @@ func mapToTerraformParentTemplateID(ctx context.Context, parentTemplate *api.Par
 }
 
 func mapToTerraformOrganizationSelection(ctx context.Context, organizationSelection *api.OrganizationSelection) *TerraformOrganizationSelection {
-	if organizationSelection == nil || !organizationSelection.Allowed {
+	if organizationSelection == nil || organizationSelection.Configuration == nil {
 		return nil
 	}
 
 	return &TerraformOrganizationSelection{
-		Allowed:       types.BoolValue(organizationSelection.Allowed),
-		Configuration: mapToOrganizationSelectionConfiguration(ctx, organizationSelection.Configuration),
-	}
-}
-
-func mapToOrganizationSelectionConfiguration(ctx context.Context, organizationSelectionConfiguration *api.OrganizationSelectionConfiguration) *TerraformOrganizationSelectionConfiguration {
-	if organizationSelectionConfiguration == nil {
-		return nil
-	}
-
-	return &TerraformOrganizationSelectionConfiguration{
-		All:      types.BoolValue(organizationSelectionConfiguration.All),
-		Selected: mapToTerraformIDWrappers(ctx, organizationSelectionConfiguration.Selected),
+		All:      types.BoolValue(organizationSelection.Configuration.All),
+		Selected: mapToTerraformIDWrappers(ctx, organizationSelection.Configuration.Selected),
 	}
 }
 

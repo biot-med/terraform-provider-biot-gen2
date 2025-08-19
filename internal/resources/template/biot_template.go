@@ -243,26 +243,18 @@ func templateAttributeSchema() map[string]schema.Attribute {
 	attrSchema["organization_selection"] = schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
-			"allowed": schema.BoolAttribute{
+			"selected": schema.SetNestedAttribute{
 				Optional: true,
-			},
-			"configuration": schema.SingleNestedAttribute{
-				Optional: true,
-				Attributes: map[string]schema.Attribute{
-					"selected": schema.SetNestedAttribute{
-						Optional: true,
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"id": schema.StringAttribute{
-									Optional: true,
-								},
-							},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Optional: true,
 						},
 					},
-					"all": schema.BoolAttribute{
-						Optional: true,
-					},
 				},
+			},
+			"all": schema.BoolAttribute{
+				Optional: true,
 			},
 		},
 	}

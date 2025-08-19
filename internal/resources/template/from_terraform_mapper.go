@@ -90,9 +90,8 @@ func mapBuiltinAttributes(ctx context.Context, attrs []TerraformBuiltinAttribute
 	return result
 }
 
-func mapTemplateAttributes(ctx context.Context, attrs []TerraformTemplateAttribute) []api.CreateTemplateAttribute {
-
-	result := make([]api.CreateTemplateAttribute, 0, len(attrs))
+func mapTemplateAttributes(ctx context.Context, attrs []TerraformTemplateAttribute) []api.TemplateAttributeRequest {
+	result := make([]api.TemplateAttributeRequest, 0, len(attrs))
 
 	for _, attr := range attrs {
 		var value interface{}
@@ -111,10 +110,10 @@ func mapTemplateAttributes(ctx context.Context, attrs []TerraformTemplateAttribu
 			value = nil
 		}
 
-		result = append(result, api.CreateTemplateAttribute{
+		result = append(result, api.TemplateAttributeRequest{
 			BaseAttribute:         mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
 			Value:                 value,
-			OrganizationSelection: mapOrgSelection(attr.OrganizationSelection),
+			OrganizationSelectionConfiguration: mapOrgSelection(attr.OrganizationSelection),
 		})
 	}
 
@@ -215,26 +214,18 @@ func mapSelectableValues(attributeType string, vals []TerraformSelectableValue) 
 	return result
 }
 
-func mapOrgSelection(sel *TerraformOrganizationSelection) *api.OrganizationSelection {
-	if sel == nil {
+func mapOrgSelection(organizationSelection *TerraformOrganizationSelection) *api.OrganizationSelectionConfiguration {
+	if organizationSelection == nil {
 		return nil
 	}
-	return &api.OrganizationSelection{
-		Allowed:       sel.Allowed.ValueBool(),
-		Configuration: mapOrgSelectionConfig(sel.Configuration),
-	}
-}
 
-func mapOrgSelectionConfig(cfg *TerraformOrganizationSelectionConfiguration) *api.OrganizationSelectionConfiguration {
-	if cfg == nil {
-		return nil
-	}
-	selected := make([]api.IDWrapper, len(cfg.Selected))
-	for i, s := range cfg.Selected {
+	selected := make([]api.IDWrapper, len(organizationSelection.Selected))
+	for i, s := range organizationSelection.Selected {
 		selected[i] = api.IDWrapper{ID: s.ID.ValueString()}
 	}
+
 	return &api.OrganizationSelectionConfiguration{
 		Selected: selected,
-		All:      cfg.All.ValueBool(),
+		All:      organizationSelection.All.ValueBool(),
 	}
 }
