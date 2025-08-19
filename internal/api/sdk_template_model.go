@@ -28,11 +28,11 @@ type CreateTemplateRequest struct {
 type TemplateResponse struct {
 	BaseTemplate
 	ID string `json:"id"`
-	EntityTypeName     string                      			`json:"entityTypeName"`
-	ParentTemplate     *ParentTemplate            			`json:"parentTemplate"`
+	EntityTypeName     string                      		`json:"entityTypeName"`
+	ParentTemplate     *ParentTemplate            		`json:"parentTemplate"`
 	BuiltInAttributes  []BuiltinAttributeResponse     	`json:"builtInAttributes"`
 	CustomAttributes   []CustomAttributeResponse     	`json:"customAttributes"`
-	TemplateAttributes []TemplateAttributeResponse 			`json:"templateAttributes"`
+	TemplateAttributes []TemplateAttributeResponse 		`json:"templateAttributes"`
 }
 
 // ********* All below are for search: *****************
