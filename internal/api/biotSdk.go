@@ -14,8 +14,8 @@ import (
 )
 
 type Jwt struct {
-	Token      string `json:"token"`
-	Expiration string `json:"expiration"`
+	Token      string `json:"accessToken"`
+	Expiration string `json:"accessTokenExpiration"`
 }
 
 // TODO: Move to seperate file - Login Model ?
@@ -40,7 +40,7 @@ var SpecificErrorCodes = errorCodesStruct{
 }
 
 type BiotSdk interface {
-	LoginWithCredentials(ctx context.Context, username string, password string) (LoginResponse, error)
+	LoginAsService(ctx context.Context, seviceId string, serviceSecretKey string) (Jwt, error)
 	CreateTemplate(ctx context.Context, accessToken string, request CreateTemplateRequest) (TemplateResponse, error)
 	UpdateTemplate(ctx context.Context, accessToken string, id string, request UpdateTemplateRequest) (TemplateResponse, error)
 	GetTemplate(ctx context.Context, token string, id string) (TemplateResponse, error)
@@ -61,50 +61,45 @@ type biotSdkImpl struct {
 	baseUrl string
 }
 
-// TODO: Change to login as service.
-func (biotSdkImpl biotSdkImpl) LoginWithCredentials(ctx context.Context, username string, password string) (LoginResponse, error) {
-	var url = fmt.Sprintf("%s/%s/v2/users/login", biotSdkImpl.baseUrl, umsPrefix)
+func (biotSdkImpl biotSdkImpl) LoginAsService(ctx context.Context, serviceId string, serviceSecretKey string) (Jwt, error) {
+	var url = fmt.Sprintf("%s/%s/v2/services/accessToken", biotSdkImpl.baseUrl, umsPrefix)
 
 	requestBody, err := json.Marshal(map[string]string{
-		"username": username,
-		"password": password,
+		"id":        serviceId,
+		"secretKey": serviceSecretKey,
 	})
 
 	if err != nil {
-		return LoginResponse{}, err
+		return Jwt{}, err
 	}
 
-	return login(ctx, url, requestBody)
-}
-
-func login(ctx context.Context, url string, requestBody []byte) (LoginResponse, error) {
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(requestBody))
 	if err != nil {
-		tflog.Warn(ctx, fmt.Sprintf("biotSdk: login - failed to create request with url: [%s]", url))
-		return LoginResponse{}, err
+		tflog.Warn(ctx, fmt.Sprintf("biotSdk: LoginAsService - failed to create request with url: [%s]", url))
+		return Jwt{}, err
 	}
 
 	request.Header.Set("Content-Type", "application/json")
 	response, requestError := httpClient.Do(request)
 
 	if requestError != nil {
-		tflog.Warn(ctx, fmt.Sprintf("biotSdk: login - failed to call api with url: [%s]", url))
-		return LoginResponse{}, requestError
+		tflog.Warn(ctx, fmt.Sprintf("biotSdk: LoginAsService - failed to call api with url: [%s]", url))
+		return Jwt{}, requestError
 	}
 
 	if !isResponseOk(response) {
-		tflog.Warn(ctx, fmt.Sprintf("biotSdk: login - api result is not 200 with url: [%s]", url))
-		return LoginResponse{}, getErrorMessage(response)
+		tflog.Warn(ctx, fmt.Sprintf("biotSdk: LoginAsService - api result is not 200 with url: [%s]", url))
+		return Jwt{}, getErrorMessage(response)
 	}
 
 	defer response.Body.Close()
 
 	var body []byte
-	var loginResponse LoginResponse
-	json.NewDecoder(response.Body).Decode(&loginResponse)
-	json.Unmarshal(body, &loginResponse)
+	var JwtResponse Jwt
+	json.NewDecoder(response.Body).Decode(&JwtResponse)
+	json.Unmarshal(body, &JwtResponse)
 
-	return loginResponse, nil
+	return JwtResponse, nil
 }
 
 func (biotSdkImpl biotSdkImpl) CreateTemplate(ctx context.Context, accessToken string, request CreateTemplateRequest) (TemplateResponse, error) {

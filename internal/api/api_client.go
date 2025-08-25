@@ -3,12 +3,11 @@ package api
 import (
 	"context"
 	"fmt"
-
 )
 
-type APIClient struct{
-	BiotSdk BiotSdk
-	serviceId string
+type APIClient struct {
+	BiotSdk          BiotSdk
+	serviceId        string
 	serviceSecretKey string
 }
 
@@ -21,13 +20,13 @@ func NewAPIClient(bioSdk BiotSdk, serviceId string, serviceSecretKey string) *AP
 }
 
 func (apiClient *APIClient) CreateTemplate(ctx context.Context, req CreateTemplateRequest) (TemplateResponse, error) {
-	token, err := apiClient.getAccessToken(ctx);
+	token, err := apiClient.getAccessToken(ctx)
 
 	if err != nil {
 		return TemplateResponse{}, err
 	}
 
-	response, err := apiClient.BiotSdk.CreateTemplate(ctx, token, req);
+	response, err := apiClient.BiotSdk.CreateTemplate(ctx, token, req)
 	if err != nil {
 		return TemplateResponse{}, err
 	}
@@ -36,13 +35,13 @@ func (apiClient *APIClient) CreateTemplate(ctx context.Context, req CreateTempla
 }
 
 func (apiClient *APIClient) GetTemplate(ctx context.Context, id string) (TemplateResponse, error) {
-	token, err := apiClient.getAccessToken(ctx);
+	token, err := apiClient.getAccessToken(ctx)
 
 	if err != nil {
 		return TemplateResponse{}, err
 	}
 
-	response, err := apiClient.BiotSdk.GetTemplate(ctx, token, id);
+	response, err := apiClient.BiotSdk.GetTemplate(ctx, token, id)
 	if err != nil {
 		return TemplateResponse{}, err
 	}
@@ -51,7 +50,7 @@ func (apiClient *APIClient) GetTemplate(ctx context.Context, id string) (Templat
 }
 
 func (apiClient APIClient) GetTemplateByTypeAndName(ctx context.Context, entityType string, templateName string) (TemplateResponse, error) {
-	token, err := apiClient.getAccessToken(ctx);
+	token, err := apiClient.getAccessToken(ctx)
 
 	if err != nil {
 		return TemplateResponse{}, err
@@ -68,7 +67,7 @@ func (apiClient APIClient) GetTemplateByTypeAndName(ctx context.Context, entityT
 		},
 	}
 
-	response, err := apiClient.BiotSdk.SearchTemplates(ctx, token, searchRequest);
+	response, err := apiClient.BiotSdk.SearchTemplates(ctx, token, searchRequest)
 	if err != nil {
 		return TemplateResponse{}, err
 	}
@@ -84,13 +83,13 @@ func (apiClient APIClient) GetTemplateByTypeAndName(ctx context.Context, entityT
 }
 
 func (apiClient *APIClient) UpdateTemplate(ctx context.Context, id string, req UpdateTemplateRequest) (TemplateResponse, error) {
-	token, err := apiClient.getAccessToken(ctx);
+	token, err := apiClient.getAccessToken(ctx)
 
 	if err != nil {
 		return TemplateResponse{}, err
 	}
 
-	response, err := apiClient.BiotSdk.UpdateTemplate(ctx, token, id, req);
+	response, err := apiClient.BiotSdk.UpdateTemplate(ctx, token, id, req)
 	if err != nil {
 		return TemplateResponse{}, err
 	}
@@ -99,24 +98,24 @@ func (apiClient *APIClient) UpdateTemplate(ctx context.Context, id string, req U
 }
 
 func (apiClient *APIClient) DeleteTemplate(ctx context.Context, id string) error {
-	token, err := apiClient.getAccessToken(ctx);
+	token, err := apiClient.getAccessToken(ctx)
 
 	if err != nil {
 		return err
 	}
 
-	return apiClient.BiotSdk.DeleteTemplate(ctx, token, id);
+	return apiClient.BiotSdk.DeleteTemplate(ctx, token, id)
 }
 
 /* Privage Functions: */
 
 func (apiClient *APIClient) getAccessToken(ctx context.Context) (string, error) {
-	// TODO: Change to login as service with service id + key.
-	response, err := apiClient.BiotSdk.LoginWithCredentials(ctx, apiClient.serviceId, apiClient.serviceSecretKey);
+	response, err := apiClient.BiotSdk.LoginAsService(ctx, apiClient.serviceId, apiClient.serviceSecretKey)
 
 	if err != nil {
-		return "", err
+		// return "", err
+		return "", fmt.Errorf("failed to login as service using service ID [%s]: %w", apiClient.serviceId, err)
 	}
 
-	return response.AccessJwt.Token, nil;
+	return response.Token, nil
 }
