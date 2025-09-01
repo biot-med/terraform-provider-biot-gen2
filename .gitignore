@@ -4,6 +4,8 @@
 example.tf
 terraform.tfplan
 terraform.tfstate
+terraform-provider-biot
+terraform-provider-biot.exe
 bin/
 dist/
 modules-dev/
