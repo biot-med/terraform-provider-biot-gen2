@@ -186,5 +186,5 @@ type OrganizationSelectionConfiguration struct {
 }
 
 type IDWrapper struct {
-	ID string `json:"id""`
+	ID string `json:"id"`
 }

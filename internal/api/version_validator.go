@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"biot.com/terraform-provider-biot/internal/version"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // VersionValidator handles version validation for the Terraform provider
@@ -49,25 +49,35 @@ func (v *VersionValidator) ValidateVersions(ctx context.Context) (*TerraformVers
 
 // Validate performs complete version validation including compatibility check and logging
 func (v *VersionValidator) Validate(ctx context.Context) error {
-	log.Printf("[DEBUG] VersionValidator - Starting version validation for provider version: %s", v.providerVersion)
+	tflog.Debug(ctx, "Starting version validation", map[string]interface{}{
+		"provider_version": v.providerVersion,
+	})
 
 	validationResponse, err := v.ValidateVersions(ctx)
 	if err != nil {
-		log.Printf("[ERROR] VersionValidator - Version validation failed: %v", err)
+		tflog.Error(ctx, "Version validation failed", map[string]interface{}{
+			"error":            err,
+			"provider_version": v.providerVersion,
+		})
 		return fmt.Errorf("version validation failed: %w", err)
 	}
 
 	if validationResponse.Status != StatusSupported {
-		log.Printf("[ERROR] VersionValidator - Incompatible versions. Provider: %s, Biot: %s, Status: %s",
-			v.providerVersion, validationResponse.BiotVersion.Version, validationResponse.Status)
+		tflog.Error(ctx, "Incompatible versions detected", map[string]interface{}{
+			"provider_version": v.providerVersion,
+			"biot_version":     validationResponse.BiotVersion.Version,
+			"status":           validationResponse.Status,
+		})
 
 		// Convert the full response to JSON for detailed error information
 		jsonResponse, _ := json.MarshalIndent(validationResponse, "", "  ")
 		return fmt.Errorf("versions are not compatible. %s", string(jsonResponse))
 	}
 
-	log.Printf("[INFO] VersionValidator - Version validation successful. Provider: %s, Biot: %s",
-		v.providerVersion, validationResponse.BiotVersion.Version)
+	tflog.Info(ctx, "Version validation successful", map[string]interface{}{
+		"provider_version": v.providerVersion,
+		"biot_version":     validationResponse.BiotVersion.Version,
+	})
 	return nil
 }
 

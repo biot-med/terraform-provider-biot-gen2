@@ -5,7 +5,6 @@ package provider
 
 import (
 	"context"
-	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -15,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"biot.com/terraform-provider-biot/internal/api"
 	"biot.com/terraform-provider-biot/internal/resources/template"
@@ -97,13 +97,14 @@ func (p *BiotProvider) Schema(ctx context.Context, req provider.SchemaRequest, r
 }
 
 func (p *BiotProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	tflog.Debug(ctx, "Starting provider configuration")
 
 	var config BiotProviderModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 
 	if resp.Diagnostics.HasError() {
-		log.Printf("[ERROR] BiotProvider.Configure failed - Configuration validation errors")
+		tflog.Error(ctx, "Provider configuration failed due to validation errors")
 		return
 	}
 
@@ -121,6 +122,11 @@ func (p *BiotProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 		)
 		return
 	}
+
+	tflog.Info(ctx, "Provider configuration completed successfully", map[string]interface{}{
+		"base_url":   config.BaseURL,
+		"service_id": config.ServiceID,
+	})
 
 	// Example client configuration for data sources and resources
 	resp.DataSourceData = client

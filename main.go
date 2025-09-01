@@ -35,6 +35,7 @@ func main() {
 	err := providerserver.Serve(context.Background(), provider.New(version), opts)
 
 	if err != nil {
+		// Use log.Fatal for main function as tflog is not available here
 		log.Fatal(err.Error())
 	}
 }
