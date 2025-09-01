@@ -46,6 +46,7 @@ type BiotSdk interface {
 	GetTemplate(ctx context.Context, token string, id string) (TemplateResponse, error)
 	DeleteTemplate(ctx context.Context, accessToken string, id string) error
 	SearchTemplates(ctx context.Context, token string, searchrequest map[string]interface{}) (SearchTemplatesResponse, error)
+	ValidateVersions(ctx context.Context, accessToken string, terraformProviderVersion string, minimumBiotVersion string) (TerraformVersionValidationResponse, error)
 }
 
 const (
@@ -271,6 +272,40 @@ func encodeSearchRequest(searchRequest map[string]interface{}) (string, error) {
 
 	encoded := url.QueryEscape(string(jsonBytes))
 	return encoded, nil
+}
+
+func (biotSdkImpl biotSdkImpl) ValidateVersions(ctx context.Context, accessToken string, terraformProviderVersion string, minimumBiotVersion string) (TerraformVersionValidationResponse, error) {
+	baseURL := fmt.Sprintf("%s/%s/v1/terraform/versions/validate", biotSdkImpl.baseUrl, settingsPrefix)
+
+	// Add query parameters
+	params := url.Values{}
+	params.Add("terraform-provider", terraformProviderVersion)
+	params.Add("minimum-biot", minimumBiotVersion)
+	fullURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
+
+	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
+	if err != nil {
+		return TerraformVersionValidationResponse{}, err
+	}
+
+	req.Header.Set(authorizationHeaderKey, fmt.Sprintf("Bearer %s", accessToken))
+
+	httpResponse, err := httpClient.Do(req)
+	if err != nil {
+		return TerraformVersionValidationResponse{}, err
+	}
+	defer httpResponse.Body.Close()
+
+	if !isResponseOk(httpResponse) {
+		return TerraformVersionValidationResponse{}, getErrorMessage(httpResponse)
+	}
+
+	var validationResponse TerraformVersionValidationResponse
+	if err := json.NewDecoder(httpResponse.Body).Decode(&validationResponse); err != nil {
+		return TerraformVersionValidationResponse{}, err
+	}
+
+	return validationResponse, nil
 }
 
 func NewBiotSdkImpl(baseUrl string) *biotSdkImpl {
