@@ -18,6 +18,7 @@ import (
 
 	"biot.com/terraform-provider-biot/internal/api"
 	"biot.com/terraform-provider-biot/internal/resources/template"
+	"biot.com/terraform-provider-biot/internal/version"
 )
 
 type BiotProvider struct {
@@ -112,14 +113,21 @@ func (p *BiotProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 	authenticator := api.NewAuthenticatorService(biotSdk, config.ServiceID, config.ServiceSecretKey)
 
 	client := api.NewAPIClient(biotSdk, authenticator)
-	// Validate versions
-	versionValidator := api.NewVersionValidator(biotSdk, authenticator, p.version)
 
-	if err := versionValidator.Validate(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Version Validation Failed",
-			err.Error(),
-		)
+	// Validate versions
+	versionValidator := api.NewVersionValidator(biotSdk, authenticator)
+
+	if err := versionValidator.Validate(ctx, p.version, version.MinimumBiotVersion); err != nil {
+		switch e := err.(type) {
+		case api.ValidationUnsupportedError:
+			// 200 OK but status == UNSUPPORTED
+			resp.Diagnostics.AddError("Versions Validation Failed", e.Error())
+		case api.ValidationAPIError:
+			// Non-200/transport error
+			resp.Diagnostics.AddError("Error occurred while trying to validate version", e.Error())
+		default:
+			resp.Diagnostics.AddError("Error occurred while trying to validate version", err.Error())
+		}
 		return
 	}
 
