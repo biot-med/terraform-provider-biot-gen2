@@ -6,21 +6,19 @@ import (
 )
 
 type APIClient struct {
-	BiotSdk          BiotSdk
-	serviceId        string
-	serviceSecretKey string
+	BiotSdk       BiotSdk
+	authenticator *AuthenticatorService
 }
 
-func NewAPIClient(bioSdk BiotSdk, serviceId string, serviceSecretKey string) *APIClient {
+func NewAPIClient(biotSdk BiotSdk, authenticator *AuthenticatorService) *APIClient {
 	return &APIClient{
-		BiotSdk:          bioSdk,
-		serviceId:        serviceId,
-		serviceSecretKey: serviceSecretKey,
+		BiotSdk:       biotSdk,
+		authenticator: authenticator,
 	}
 }
 
 func (apiClient *APIClient) CreateTemplate(ctx context.Context, req CreateTemplateRequest) (TemplateResponse, error) {
-	token, err := apiClient.getAccessToken(ctx)
+	token, err := apiClient.authenticator.GetAccessToken(ctx)
 
 	if err != nil {
 		return TemplateResponse{}, err
@@ -35,7 +33,7 @@ func (apiClient *APIClient) CreateTemplate(ctx context.Context, req CreateTempla
 }
 
 func (apiClient *APIClient) GetTemplate(ctx context.Context, id string) (TemplateResponse, error) {
-	token, err := apiClient.getAccessToken(ctx)
+	token, err := apiClient.authenticator.GetAccessToken(ctx)
 
 	if err != nil {
 		return TemplateResponse{}, err
@@ -50,7 +48,7 @@ func (apiClient *APIClient) GetTemplate(ctx context.Context, id string) (Templat
 }
 
 func (apiClient APIClient) GetTemplateByTypeAndName(ctx context.Context, entityType string, templateName string) (TemplateResponse, error) {
-	token, err := apiClient.getAccessToken(ctx)
+	token, err := apiClient.authenticator.GetAccessToken(ctx)
 
 	if err != nil {
 		return TemplateResponse{}, err
@@ -83,7 +81,7 @@ func (apiClient APIClient) GetTemplateByTypeAndName(ctx context.Context, entityT
 }
 
 func (apiClient *APIClient) UpdateTemplate(ctx context.Context, id string, req UpdateTemplateRequest) (TemplateResponse, error) {
-	token, err := apiClient.getAccessToken(ctx)
+	token, err := apiClient.authenticator.GetAccessToken(ctx)
 
 	if err != nil {
 		return TemplateResponse{}, err
@@ -98,24 +96,11 @@ func (apiClient *APIClient) UpdateTemplate(ctx context.Context, id string, req U
 }
 
 func (apiClient *APIClient) DeleteTemplate(ctx context.Context, id string) error {
-	token, err := apiClient.getAccessToken(ctx)
+	token, err := apiClient.authenticator.GetAccessToken(ctx)
 
 	if err != nil {
 		return err
 	}
 
 	return apiClient.BiotSdk.DeleteTemplate(ctx, token, id)
-}
-
-/* Privage Functions: */
-
-func (apiClient *APIClient) getAccessToken(ctx context.Context) (string, error) {
-	response, err := apiClient.BiotSdk.LoginAsService(ctx, apiClient.serviceId, apiClient.serviceSecretKey)
-
-	if err != nil {
-		// return "", err
-		return "", fmt.Errorf("failed to login as service using service ID [%s]: %w", apiClient.serviceId, err)
-	}
-
-	return response.Token, nil
 }

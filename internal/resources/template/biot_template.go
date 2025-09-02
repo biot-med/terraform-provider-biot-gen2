@@ -364,7 +364,10 @@ func (r *BiotTemplateResource) ImportState(ctx context.Context, req resource.Imp
 
 	entityType := idParts[0]
 	templateName := idParts[1]
-	tflog.Debug(ctx, fmt.Sprintf("Template importState: Going to import entity type: [%s], template name: [%s]", entityType, templateName))
+	tflog.Debug(ctx, "Starting template import", map[string]interface{}{
+		"entity_type":   entityType,
+		"template_name": templateName,
+	})
 
 	templateResponse, err := r.client.GetTemplateByTypeAndName(ctx, entityType, templateName)
 
@@ -375,7 +378,10 @@ func (r *BiotTemplateResource) ImportState(ctx context.Context, req resource.Imp
 		)
 		return
 	}
-	tflog.Debug(ctx, fmt.Sprintf("Template importState: Successfully got template with name: [%s], and id [%s]", templateResponse.Name, templateResponse.ID))
+	tflog.Debug(ctx, "Successfully retrieved template for import", map[string]interface{}{
+		"template_name": templateResponse.Name,
+		"template_id":   templateResponse.ID,
+	})
 
 	tfModel := mapTemplateResponseToTerrformModel(ctx, templateResponse)
 

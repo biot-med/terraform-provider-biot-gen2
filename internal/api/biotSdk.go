@@ -46,6 +46,7 @@ type BiotSdk interface {
 	GetTemplate(ctx context.Context, token string, id string) (TemplateResponse, error)
 	DeleteTemplate(ctx context.Context, accessToken string, id string) error
 	SearchTemplates(ctx context.Context, token string, searchrequest map[string]interface{}) (SearchTemplatesResponse, error)
+	ValidateVersions(ctx context.Context, accessToken string, terraformProviderVersion string, minimumBiotVersion string) (TerraformVersionValidationResponse, error)
 }
 
 const (
@@ -75,7 +76,10 @@ func (biotSdkImpl biotSdkImpl) LoginAsService(ctx context.Context, serviceId str
 
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(requestBody))
 	if err != nil {
-		tflog.Warn(ctx, fmt.Sprintf("biotSdk: LoginAsService - failed to create request with url: [%s]", url))
+		tflog.Warn(ctx, "Failed to create login request", map[string]interface{}{
+			"url":   url,
+			"error": err,
+		})
 		return Jwt{}, err
 	}
 
@@ -83,21 +87,27 @@ func (biotSdkImpl biotSdkImpl) LoginAsService(ctx context.Context, serviceId str
 	response, requestError := httpClient.Do(request)
 
 	if requestError != nil {
-		tflog.Warn(ctx, fmt.Sprintf("biotSdk: LoginAsService - failed to call api with url: [%s]", url))
+		tflog.Warn(ctx, "Failed to call login API", map[string]interface{}{
+			"url":   url,
+			"error": requestError,
+		})
 		return Jwt{}, requestError
 	}
 
 	if !isResponseOk(response) {
-		tflog.Warn(ctx, fmt.Sprintf("biotSdk: LoginAsService - api result is not 200 with url: [%s]", url))
+		tflog.Warn(ctx, "Login API returned non-200 status", map[string]interface{}{
+			"url":         url,
+			"status_code": response.StatusCode,
+		})
 		return Jwt{}, getErrorMessage(response)
 	}
 
 	defer response.Body.Close()
 
-	var body []byte
 	var JwtResponse Jwt
-	json.NewDecoder(response.Body).Decode(&JwtResponse)
-	json.Unmarshal(body, &JwtResponse)
+	if err := json.NewDecoder(response.Body).Decode(&JwtResponse); err != nil {
+		return Jwt{}, fmt.Errorf("failed to decode JWT response: %w", err)
+	}
 
 	return JwtResponse, nil
 }
@@ -161,7 +171,11 @@ func (biotSdkImpl biotSdkImpl) DeleteTemplate(ctx context.Context, accessToken s
 func (biotSdkImpl biotSdkImpl) crudTemplateHelper(ctx context.Context, accessToken string, url string, method string, body io.Reader) (*http.Response, error) {
 	req, requestErr := http.NewRequest(method, url, body)
 	if requestErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("biotSdk: [%s] Template - failed to create request with url: [%s]", method, url))
+		tflog.Error(ctx, "Failed to create template request", map[string]interface{}{
+			"method": method,
+			"url":    url,
+			"error":  requestErr,
+		})
 		return nil, requestErr
 	}
 
@@ -173,18 +187,30 @@ func (biotSdkImpl biotSdkImpl) crudTemplateHelper(ctx context.Context, accessTok
 	var httpResponse, err = httpClient.Do(req)
 
 	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("biotSdk: [%s] Template - failed to call API with url: [%s]", method, url))
+		tflog.Error(ctx, "Failed to call template API", map[string]interface{}{
+			"method": method,
+			"url":    url,
+			"error":  err,
+		})
 		return nil, err
 	}
 
 	if httpResponse.StatusCode == 404 { // NOT_FOUND
-		tflog.Error(ctx, fmt.Sprintf("biotSdk: [%s] Template - got 404 not found for url: [%s]", method, url))
+		tflog.Error(ctx, "Template not found", map[string]interface{}{
+			"method":      method,
+			"url":         url,
+			"status_code": httpResponse.StatusCode,
+		})
 		defer httpResponse.Body.Close()
 		return nil, SpecificErrorCodes.NotFound
 	}
 
 	if !isResponseOk(httpResponse) {
-		tflog.Error(ctx, fmt.Sprintf("biotSdk: [%s] Template  - api result with status code: [%d] with url: [%s]", method, httpResponse.StatusCode, url))
+		tflog.Error(ctx, "Template API returned error status", map[string]interface{}{
+			"method":      method,
+			"url":         url,
+			"status_code": httpResponse.StatusCode,
+		})
 		defer httpResponse.Body.Close()
 		return nil, getErrorMessage(httpResponse)
 	}
@@ -271,6 +297,40 @@ func encodeSearchRequest(searchRequest map[string]interface{}) (string, error) {
 
 	encoded := url.QueryEscape(string(jsonBytes))
 	return encoded, nil
+}
+
+func (biotSdkImpl biotSdkImpl) ValidateVersions(ctx context.Context, accessToken string, terraformProviderVersion string, minimumBiotVersion string) (TerraformVersionValidationResponse, error) {
+	baseURL := fmt.Sprintf("%s/%s/v1/terraform/versions/validate", biotSdkImpl.baseUrl, settingsPrefix)
+
+	// Add query parameters
+	params := url.Values{}
+	params.Add("terraform-provider", terraformProviderVersion)
+	params.Add("minimum-biot", minimumBiotVersion)
+	fullURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
+
+	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
+	if err != nil {
+		return TerraformVersionValidationResponse{}, err
+	}
+
+	req.Header.Set(authorizationHeaderKey, fmt.Sprintf("Bearer %s", accessToken))
+
+	httpResponse, err := httpClient.Do(req)
+	if err != nil {
+		return TerraformVersionValidationResponse{}, err
+	}
+	defer httpResponse.Body.Close()
+
+	if !isResponseOk(httpResponse) {
+		return TerraformVersionValidationResponse{}, getErrorMessage(httpResponse)
+	}
+
+	var validationResponse TerraformVersionValidationResponse
+	if err := json.NewDecoder(httpResponse.Body).Decode(&validationResponse); err != nil {
+		return TerraformVersionValidationResponse{}, err
+	}
+
+	return validationResponse, nil
 }
 
 func NewBiotSdkImpl(baseUrl string) *biotSdkImpl {
