@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -84,8 +86,8 @@ func (r *BiotTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 				Optional: true,
 			},
 			"builtin_attributes": schema.SetNestedAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:    true,
+				Computed:    true,
 				Description: "Builtin attributes associated with the template.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: builtinAttributeSchema(),
@@ -105,8 +107,8 @@ func (r *BiotTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 				},
 			},
 			"template_attributes": schema.SetNestedAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:    true,
+				Computed:    true,
 				Description: "Template attributes associated with the template.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: templateAttributeSchema(),
@@ -264,16 +266,6 @@ func templateAttributeSchema() map[string]schema.Attribute {
 func (r *BiotTemplateResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state TerraformTemplate
 
-	// TODO: Implement destructive logic properly. (and probably not in "read" ...)
-	// forceEnv := os.Getenv("TF_FORCE")
-	// if forceEnv != "true" {
-	// 	resp.Diagnostics.AddError(
-	// 		"Force Required",
-	// 		"This action is dangerous. Set TF_FORCE=true to proceed.",
-	// 	)
-	// 	return
-	// }
-
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -327,11 +319,35 @@ func (r *BiotTemplateResource) Update(ctx context.Context, req resource.UpdateRe
 	req.Plan.Get(ctx, &plan)
 	req.State.Get(ctx, &state)
 
-	updateRequest := MapTerraformTemplateToUpdateRequest(ctx, plan)
-	response, err := r.client.UpdateTemplate(ctx, state.ID.ValueString(), updateRequest)
+	forceUpdateString := os.Getenv("TF_FORCE_UPDATE")
+	var forceUpdate = false
+	var err error
+
+	if forceUpdateString != "" {
+		forceUpdate, err = strconv.ParseBool(forceUpdateString)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Invalid TF_FORCE_UPDATE value",
+				fmt.Sprintf("Value [%q] is not a valid boolean (expected: true / false)", forceUpdateString),
+			)
+			return
+		}
+	}
 
 	if err != nil {
-		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Failed to update template: %s", err))
+		resp.Diagnostics.AddError("Invalid TF_FORCE_UPDATE value: [%q], should be boolean (true / false)", forceUpdateString)
+		return
+	}
+
+	updateRequest := MapTerraformTemplateToUpdateRequest(ctx, plan)
+	response, err := r.client.UpdateTemplate(ctx, state.ID.ValueString(), updateRequest, forceUpdate)
+
+	if err != nil {
+		if apiError, ok := api.ConvertAPIError(err); ok && apiError.Code == "CUSTOM_ATTRIBUTE_IN_USE" {
+			formatCustomAttributeInUseError(apiError, resp)
+		} else {
+			resp.Diagnostics.AddError("API Error", fmt.Sprintf("Failed to update template: %s", err))
+		}
 		return
 	}
 
@@ -349,6 +365,36 @@ func (r *BiotTemplateResource) Delete(ctx context.Context, req resource.DeleteRe
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Failed to delete template: %s", err))
 	}
+}
+
+func formatCustomAttributeInUseError(apiError api.APIError, resp *resource.UpdateResponse) {
+	// Extract attribute names from the details
+	var attributeNames []string
+	for _, attr := range apiError.Details.Attributes {
+		attributeNames = append(attributeNames, attr.Name)
+	}
+
+	// Create the custom message
+	var attributeList string
+	if len(attributeNames) == 1 {
+		attributeList = attributeNames[0]
+	} else if len(attributeNames) == 2 {
+		attributeList = fmt.Sprintf("%s and %s", attributeNames[0], attributeNames[1])
+	} else {
+		// Handle case with more than 2 attributes
+		lastIdx := len(attributeNames) - 1
+		attributeList = fmt.Sprintf("%s and %s",
+			strings.Join(attributeNames[:lastIdx], ", "),
+			attributeNames[lastIdx])
+	}
+
+	warningMessage := fmt.Sprintf(`You have made changes to the following observation attributes:
+%s
+If you choose to apply these changes ALL observation data will be deleted (including observations that were not changed). To apply the changes run:
+
+TF_FORCE_UPDATE=true terraform apply`, attributeList)
+
+	resp.Diagnostics.AddError("DESTRUCTIVE CHANGE WARNING", warningMessage)
 }
 
 // Import state Works with entity-type:template-name (instead of ID)

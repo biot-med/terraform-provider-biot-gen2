@@ -152,6 +152,24 @@ type Validation struct {
 	Regex        *string `json:"regex"`
 }
 
+type ErrorDetails struct {
+	Attributes []ErrorAttributeDetails `json:"attributes"`
+}
+
+type ErrorAttributeDetails struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type BiotError struct {
+	Code        string       `json:"code"`
+	Message     string       `json:"message"`
+	ServiceName string       `json:"serviceName"`
+	TraceID     string       `json:"traceId"`
+	Environment string       `json:"environment"`
+	Details     ErrorDetails `json:"details"`
+}
+
 type ValidationMetadata struct {
 	MandatoryReadOnly bool `json:"mandatoryReadOnly"`
 	SystemMandatory   bool `json:"systemMandatory"`

@@ -80,14 +80,14 @@ func (apiClient APIClient) GetTemplateByTypeAndName(ctx context.Context, entityT
 	return response.Data[0], nil
 }
 
-func (apiClient *APIClient) UpdateTemplate(ctx context.Context, id string, req UpdateTemplateRequest) (TemplateResponse, error) {
+func (apiClient *APIClient) UpdateTemplate(ctx context.Context, id string, req UpdateTemplateRequest, force bool) (TemplateResponse, error) {
 	token, err := apiClient.authenticator.GetAccessToken(ctx)
 
 	if err != nil {
 		return TemplateResponse{}, err
 	}
 
-	response, err := apiClient.BiotSdk.UpdateTemplate(ctx, token, id, req)
+	response, err := apiClient.BiotSdk.UpdateTemplate(ctx, token, id, req, force)
 	if err != nil {
 		return TemplateResponse{}, err
 	}
