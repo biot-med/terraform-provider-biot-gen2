@@ -34,15 +34,34 @@ type errorCodesStruct struct {
 	// Add more as needed
 }
 
-// Exported instance of the struct
 var SpecificErrorCodes = errorCodesStruct{
 	NotFound: errors.New("resource not found"),
+}
+
+type APIError BiotError
+
+func (e APIError) Error() string {
+	var msg string = e.Message
+	var code string = e.Code
+	var traceId string = e.TraceID
+
+	if msg == "" {
+		msg = "unknown error message"
+	}
+	if code == "" {
+		code = "unknown error code"
+	}
+	if traceId == "" {
+		traceId = "unknown trace-id"
+	}
+
+	return fmt.Sprintf("server error (code: [%s], traceId: [%s]): [%s]", code, traceId, msg)
 }
 
 type BiotSdk interface {
 	LoginAsService(ctx context.Context, seviceId string, serviceSecretKey string) (Jwt, error)
 	CreateTemplate(ctx context.Context, accessToken string, request CreateTemplateRequest) (TemplateResponse, error)
-	UpdateTemplate(ctx context.Context, accessToken string, id string, request UpdateTemplateRequest) (TemplateResponse, error)
+	UpdateTemplate(ctx context.Context, accessToken string, id string, request UpdateTemplateRequest, force bool) (TemplateResponse, error)
 	GetTemplate(ctx context.Context, token string, id string) (TemplateResponse, error)
 	DeleteTemplate(ctx context.Context, accessToken string, id string) error
 	SearchTemplates(ctx context.Context, token string, searchrequest map[string]interface{}) (SearchTemplatesResponse, error)
@@ -99,7 +118,7 @@ func (biotSdkImpl biotSdkImpl) LoginAsService(ctx context.Context, serviceId str
 			"url":         url,
 			"status_code": response.StatusCode,
 		})
-		return Jwt{}, getErrorMessage(response)
+		return Jwt{}, parseAPIError(response)
 	}
 
 	defer response.Body.Close()
@@ -127,9 +146,11 @@ func (biotSdkImpl biotSdkImpl) CreateTemplate(ctx context.Context, accessToken s
 	return getTemplateResponseBody(httpResponse)
 }
 
-func (biotSdkImpl biotSdkImpl) UpdateTemplate(ctx context.Context, accessToken string, id string, request UpdateTemplateRequest) (TemplateResponse, error) {
-	// TODO: Add ?force=true ????
+func (biotSdkImpl biotSdkImpl) UpdateTemplate(ctx context.Context, accessToken string, id string, request UpdateTemplateRequest, force bool) (TemplateResponse, error) {
 	var url = fmt.Sprintf("%s/%s/v1/templates/%s", biotSdkImpl.baseUrl, settingsPrefix, id)
+	if force {
+		url += "?force=true"
+	}
 
 	jsonBody, _ := json.Marshal(request)
 	httpResponse, err := biotSdkImpl.crudTemplateHelper(ctx, accessToken, url, http.MethodPut, bytes.NewBuffer(jsonBody))
@@ -212,7 +233,7 @@ func (biotSdkImpl biotSdkImpl) crudTemplateHelper(ctx context.Context, accessTok
 			"status_code": httpResponse.StatusCode,
 		})
 		defer httpResponse.Body.Close()
-		return nil, getErrorMessage(httpResponse)
+		return nil, parseAPIError(httpResponse)
 	}
 
 	return httpResponse, nil
@@ -250,7 +271,7 @@ func (biotSdkImpl biotSdkImpl) SearchTemplates(ctx context.Context, accessToken 
 	defer httpResponse.Body.Close()
 
 	if !isResponseOk(httpResponse) {
-		return SearchTemplatesResponse{}, getErrorMessage(httpResponse)
+		return SearchTemplatesResponse{}, parseAPIError(httpResponse)
 	}
 
 	// Parse response body into TemplateResponse
@@ -266,27 +287,27 @@ func isResponseOk(response *http.Response) bool {
 	return response.StatusCode >= 200 && response.StatusCode < 300
 }
 
-func getErrorMessage(response *http.Response) error {
-	var biotErrorObject map[string]interface{}
-	json.NewDecoder(response.Body).Decode(&biotErrorObject)
+func parseAPIError(response *http.Response) error {
+	var apiError APIError
+	json.NewDecoder(response.Body).Decode(&apiError)
 
-	var msg string
-	var code string
-	var traceId string
-
-	if msg, _ = biotErrorObject["message"].(string); msg == "" {
-		msg = "unknown error message"
+	// Ensure required fields have defaults
+	if apiError.Message == "" {
+		apiError.Message = "unknown error message"
+	}
+	if apiError.Code == "" {
+		apiError.Code = "unknown error code"
+	}
+	if apiError.TraceID == "" {
+		apiError.TraceID = "unknown trace-id"
 	}
 
-	if code, _ = biotErrorObject["code"].(string); code == "" {
-		code = "unknown error code"
-	}
+	return apiError
+}
 
-	if traceId, _ = biotErrorObject["traceId"].(string); traceId == "" {
-		traceId = "unknown trade-id"
-	}
-
-	return fmt.Errorf("server error (status: [%d], code: [%s], traceId: [%s]): [%s]", response.StatusCode, code, traceId, msg)
+func ConvertAPIError(err error) (apiError APIError, ok bool) {
+	apiError, ok = err.(APIError)
+	return apiError, ok
 }
 
 func encodeSearchRequest(searchRequest map[string]interface{}) (string, error) {
@@ -322,7 +343,7 @@ func (biotSdkImpl biotSdkImpl) ValidateVersions(ctx context.Context, accessToken
 	defer httpResponse.Body.Close()
 
 	if !isResponseOk(httpResponse) {
-		return TerraformVersionValidationResponse{}, getErrorMessage(httpResponse)
+		return TerraformVersionValidationResponse{}, parseAPIError(httpResponse)
 	}
 
 	var validationResponse TerraformVersionValidationResponse
