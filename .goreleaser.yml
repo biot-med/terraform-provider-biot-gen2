@@ -1,7 +1,10 @@
 # .goreleaser.yml
+version: 2
+
 project_name: terraform-provider-biot-gen2
+
 builds:
-  - id: terraform-provider-biot-gen2
+  - id: biot-gen2
     main: .
     binary: terraform-provider-biot-gen2
     goos:
@@ -35,4 +38,3 @@ release:
   github:
     owner: biot-med
     name: terraform-provider-biot-gen2
-
