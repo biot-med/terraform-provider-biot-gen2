@@ -1,3 +1,7 @@
-## 0.1.0 (Unreleased)
+## 1.0.0
 
-FEATURES:
+**Release date**: Sep 30, 2025
+
+## Changes
+
+- First Version
