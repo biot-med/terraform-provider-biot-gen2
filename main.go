@@ -8,7 +8,7 @@ import (
 	"flag"
 	"log"
 
-	"biot.com/terraform-provider-biot/internal/provider"
+	"biot.com/terraform-provider-biot-gen2/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 
@@ -26,9 +26,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		// TODO: Update address localhost to a registry after depoying the plugin publicly.
-		// Address: "registry.terraform.io/localhost/biot",
-		Address: "example.com/biot/biot",
+		Address: "registry.terraform.io/biot-med/biot",
 		Debug:   debug,
 	}
 

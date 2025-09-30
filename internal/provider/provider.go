@@ -16,9 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	"biot.com/terraform-provider-biot/internal/api"
-	"biot.com/terraform-provider-biot/internal/resources/template"
-	"biot.com/terraform-provider-biot/internal/version"
+	"biot.com/terraform-provider-biot-gen2/internal/api"
+	"biot.com/terraform-provider-biot-gen2/internal/resources/template"
+	"biot.com/terraform-provider-biot-gen2/internal/version"
 )
 
 type BiotProvider struct {

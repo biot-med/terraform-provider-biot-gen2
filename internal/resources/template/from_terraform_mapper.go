@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
-	"biot.com/terraform-provider-biot/internal/api"
-	"biot.com/terraform-provider-biot/internal/utils"
+	"biot.com/terraform-provider-biot-gen2/internal/api"
+	"biot.com/terraform-provider-biot-gen2/internal/utils"
 )
 
 func MapTerraformTemplateToCreateRequest(ctx context.Context, t TerraformTemplate) api.CreateTemplateRequest {
@@ -53,17 +53,17 @@ func mapAnalyticsDbConfig(ctx context.Context, c *TerraformAnalyticsDbConfigurat
 
 func mapBaseAttribute(ctx context.Context, attr BaseTerraformAttribute) api.BaseAttribute {
 	return api.BaseAttribute{
-		Name:                     attr.Name.ValueString(),
-		BasePath:                 utils.StringOrNilPtr(attr.BasePath),
-		ID:                       attr.ID.ValueString(),
-		DisplayName:              attr.DisplayName.ValueString(),
-		Phi:                      attr.Phi.ValueBool(),
-		ReferenceConfiguration:   mapReferenceConfiguration(attr.ReferenceConfiguration),
-		LinkConfiguration:        mapLinkConfiguration(attr.LinkConfiguration),
-		Validation:               mapValidation(attr.Validation),
-		NumericMetaData:          mapNumericMetaData(attr.NumericMetaData),
-		Type:                     attr.Type.ValueString(),
-		SelectableValues:         mapSelectableValues(attr.Name.ValueString(), attr.SelectableValues),
+		Name:                   attr.Name.ValueString(),
+		BasePath:               utils.StringOrNilPtr(attr.BasePath),
+		ID:                     attr.ID.ValueString(),
+		DisplayName:            attr.DisplayName.ValueString(),
+		Phi:                    attr.Phi.ValueBool(),
+		ReferenceConfiguration: mapReferenceConfiguration(attr.ReferenceConfiguration),
+		LinkConfiguration:      mapLinkConfiguration(attr.LinkConfiguration),
+		Validation:             mapValidation(attr.Validation),
+		NumericMetaData:        mapNumericMetaData(attr.NumericMetaData),
+		Type:                   attr.Type.ValueString(),
+		SelectableValues:       mapSelectableValues(attr.Name.ValueString(), attr.SelectableValues),
 	}
 }
 
@@ -71,8 +71,8 @@ func mapCustomAttributes(ctx context.Context, attrs []TerraformCustomAttribute) 
 	result := []api.CustomAttributeRequest{}
 	for _, attr := range attrs {
 		result = append(result, api.CustomAttributeRequest{
-			BaseAttribute: mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
-			Category:      attr.Category.ValueString(),
+			BaseAttribute:            mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
+			Category:                 attr.Category.ValueString(),
 			AnalyticsDbConfiguration: mapAnalyticsDbConfig(ctx, attr.AnalyticsDbConfiguration),
 		})
 	}
@@ -83,7 +83,7 @@ func mapBuiltinAttributes(ctx context.Context, attrs []TerraformBuiltinAttribute
 	result := []api.BuiltinAttributeRequest{}
 	for _, attr := range attrs {
 		result = append(result, api.BuiltinAttributeRequest{
-			BaseAttribute: mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
+			BaseAttribute:            mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
 			AnalyticsDbConfiguration: mapAnalyticsDbConfig(ctx, attr.AnalyticsDbConfiguration),
 		})
 	}
@@ -111,8 +111,8 @@ func mapTemplateAttributes(ctx context.Context, attrs []TerraformTemplateAttribu
 		}
 
 		result = append(result, api.TemplateAttributeRequest{
-			BaseAttribute:         mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
-			Value:                 value,
+			BaseAttribute:                      mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
+			Value:                              value,
 			OrganizationSelectionConfiguration: mapOrgSelection(attr.OrganizationSelection),
 		})
 	}

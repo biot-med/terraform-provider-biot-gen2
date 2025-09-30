@@ -16,8 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	"biot.com/terraform-provider-biot/internal/api"
-	biotplanmodifiers "biot.com/terraform-provider-biot/internal/resources/biot_plan_modifiers"
+	"biot.com/terraform-provider-biot-gen2/internal/api"
+	biotplanmodifiers "biot.com/terraform-provider-biot-gen2/internal/resources/biot_plan_modifiers"
 )
 
 func NewResource() resource.Resource {

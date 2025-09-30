@@ -1,4 +1,4 @@
-module biot.com/terraform-provider-biot
+module biot.com/terraform-provider-biot-gen2
 
 go 1.23.7
 

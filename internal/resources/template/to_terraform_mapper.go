@@ -3,8 +3,8 @@ package template
 import (
 	"context"
 
-	"biot.com/terraform-provider-biot/internal/api"
-	"biot.com/terraform-provider-biot/internal/utils"
+	"biot.com/terraform-provider-biot-gen2/internal/api"
+	"biot.com/terraform-provider-biot-gen2/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
@@ -48,36 +48,36 @@ func mapTemplateResponseToTerrformModel(ctx context.Context, resp api.TemplateRe
 
 func mapBuiltinAttributeResponseToTerraformAttribute(ctx context.Context, attr api.BuiltinAttributeResponse) TerraformBuiltinAttribute {
 	base := mapAttributeResponseToTerrformAttribute(ctx, attr.BaseAttributeResponse)
-	
+
 	return TerraformBuiltinAttribute{
-		BaseTerraformAttribute: base,
+		BaseTerraformAttribute:   base,
 		AnalyticsDbConfiguration: mapToTerraformAnalyticsDbConfiguration(ctx, attr.AnalyticsDbConfiguration),
 	}
 }
 
 func mapCustomAttributeResponseToTerraformAttribute(ctx context.Context, attr api.CustomAttributeResponse) TerraformCustomAttribute {
 	base := mapAttributeResponseToTerrformAttribute(ctx, attr.BaseAttributeResponse)
-	
+
 	return TerraformCustomAttribute{
-		BaseTerraformAttribute: base,
+		BaseTerraformAttribute:   base,
 		AnalyticsDbConfiguration: mapToTerraformAnalyticsDbConfiguration(ctx, attr.AnalyticsDbConfiguration),
 	}
 }
 
 func mapAttributeResponseToTerrformAttribute(ctx context.Context, attr api.BaseAttributeResponse) BaseTerraformAttribute {
 	return BaseTerraformAttribute{
-		Name:                     types.StringValue(attr.Name),
-		BasePath:                 utils.StringOrNullPtr(attr.BasePath),
-		ID:                       types.StringValue(attr.ID),
-		DisplayName:              types.StringValue(attr.DisplayName),
-		Phi:                      types.BoolValue(attr.Phi),
-		Type:                     types.StringValue(attr.Type),
-		Category:                 mapToTerraformCategory(ctx, attr.Category),
-		SelectableValues:         mapToTerraformSelectableValues(ctx, attr.Type, attr.SelectableValues),
-		ReferenceConfiguration:   mapToTerraformReferenceConfiguration(ctx, attr.ReferenceConfiguration),
-		LinkConfiguration:        mapToTerraformLinkConfiguration(ctx, attr.LinkConfiguration),
-		Validation:               mapToTerraformValidation(ctx, attr.Validation),
-		NumericMetaData:          mapToTerraformNumericMetaData(ctx, attr.NumericMetaData),
+		Name:                   types.StringValue(attr.Name),
+		BasePath:               utils.StringOrNullPtr(attr.BasePath),
+		ID:                     types.StringValue(attr.ID),
+		DisplayName:            types.StringValue(attr.DisplayName),
+		Phi:                    types.BoolValue(attr.Phi),
+		Type:                   types.StringValue(attr.Type),
+		Category:               mapToTerraformCategory(ctx, attr.Category),
+		SelectableValues:       mapToTerraformSelectableValues(ctx, attr.Type, attr.SelectableValues),
+		ReferenceConfiguration: mapToTerraformReferenceConfiguration(ctx, attr.ReferenceConfiguration),
+		LinkConfiguration:      mapToTerraformLinkConfiguration(ctx, attr.LinkConfiguration),
+		Validation:             mapToTerraformValidation(ctx, attr.Validation),
+		NumericMetaData:        mapToTerraformNumericMetaData(ctx, attr.NumericMetaData),
 	}
 }
 
@@ -86,8 +86,8 @@ func mapTemplateAttributeResponseToTerrformAttribute(ctx context.Context, attr a
 
 	return TerraformTemplateAttribute{
 		BaseTerraformAttribute: base,
-		Value:                	utils.InterfaceToJsonString(ctx, "value", attr.Value),
-		OrganizationSelection: 	mapToTerraformOrganizationSelection(ctx, attr.OrganizationSelection),
+		Value:                  utils.InterfaceToJsonString(ctx, "value", attr.Value),
+		OrganizationSelection:  mapToTerraformOrganizationSelection(ctx, attr.OrganizationSelection),
 	}
 }
 
