@@ -38,11 +38,3 @@ release:
   github:
     owner: biot-med
     name: terraform-provider-biot-gen2
-
-terraform_registries:
-  - provider: "biot-med/biot-gen2"
-    owner: "biot-med"
-    namespace: "biot-med"
-    name: "biot-gen2"
-    registry_tiers:
-      - "public"
