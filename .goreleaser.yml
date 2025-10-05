@@ -28,11 +28,11 @@ archives:
 checksum:
   name_template: "SHA256SUMS"
 
-# signs:
-#   - artifacts: checksum
-#     args: ["--detach-sign"]
-#     cmd: gpg
-#     signature: "${artifact}.sig"
+signs:
+  - artifacts: checksum
+    args: ["--detach-sign"]
+    cmd: gpg
+    signature: "${artifact}.sig"
 
 release:
   github:
