@@ -34,11 +34,17 @@ checksum:
 #     cmd: gpg
 #     signature: "${artifact}.sig"
 
-before:
-  hooks:
-    - gpg --detach-sign --armor --default-key 7C56BDFFED7D41BE dist/SHA256SUMS && mv dist/SHA256SUMS.asc dist/SHA256SUMS.sig
+# before:
+#   hooks:
+#     - gpg --detach-sign --armor --default-key 7C56BDFFED7D41BE dist/SHA256SUMS && mv dist/SHA256SUMS.asc dist/SHA256SUMS.sig
 
 release:
   github:
     owner: biot-med
     name: terraform-provider-biot-gen2
+
+publishers:
+  - name: sign-checksums
+    cmd: gpg --detach-sign --armor --default-key 7C56BDFFED7D41BE dist/SHA256SUMS && mv dist/SHA256SUMS.asc dist/SHA256SUMS.sig
+    extra_files:
+      - dist/SHA256SUMS.sig
