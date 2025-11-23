@@ -37,7 +37,12 @@ Generate SHA256SUMS and SHA256SUMS.sig
 
 Create a GitHub release
 
-Upload all files to the release
+Upload all files to the release:
+  - Go to your release on github - for example - https://github.com/biot-med/terraform-provider-biot-gen2/releases/tag/v1.0.0 (this is v1.0.0 releaes)
+  - Click "Edit"
+  - Upload these files:
+    dist/terraform-provider-biot-gen2_1.0.0_SHA256SUMS
+    dist/terraform-provider-biot-gen2_1.0.0_SHA256SUMS.sig
 
 
 ## Verify GitHub Release
