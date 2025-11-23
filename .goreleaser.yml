@@ -26,11 +26,13 @@ archives:
       - README.md
 
 checksum:
-  name_template: "SHA256SUMS"
+  name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
 
-before:
-  hooks:
-    - 'echo "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --detach-sign --armor --default-key 7C56BDFFED7D41BE dist/SHA256SUMS && mv dist/SHA256SUMS.asc dist/SHA256SUMS.sig'
+signs:
+  - artifacts: checksum
+    cmd: ./sign-checksum.sh
+    args: ["${artifact}"]
+    signature: "${artifact}.sig"
 
 release:
   github:
