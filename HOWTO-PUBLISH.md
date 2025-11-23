@@ -33,16 +33,16 @@ Build binaries for all OS/arch combinations
 
 Package them in .zip files
 
-Generate SHA256SUMS and SHA256SUMS.sig
+Generate SHA256SUMS (and SHA256SUMS.sig if GPG signing is enabled)
 
-Create a GitHub release
+Create a GitHub release and automatically upload:
+  - All .zip binaries
+  - SHA256SUMS file
 
-Upload all files to the release:
-  - Go to your release on github - for example - https://github.com/biot-med/terraform-provider-biot-gen2/releases/tag/v1.0.0 (this is v1.0.0 releaes)
+Note: GoReleaser automatically uploads the SHA256SUMS file to the GitHub release. If GPG signing is enabled, you may need to manually upload the SHA256SUMS.sig file:
+  - Go to your release on github - for example - https://github.com/biot-med/terraform-provider-biot-gen2/releases/tag/v1.0.1
   - Click "Edit"
-  - Upload these files:
-    dist/terraform-provider-biot-gen2_1.0.0_SHA256SUMS
-    dist/terraform-provider-biot-gen2_1.0.0_SHA256SUMS.sig
+  - Upload: dist/SHA256SUMS.sig (only if GPG signing is enabled in .goreleaser.yml)
 
 
 ## Verify GitHub Release
