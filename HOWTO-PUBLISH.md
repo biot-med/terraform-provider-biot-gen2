@@ -25,7 +25,7 @@ Github repo: https://github.com/biot-med/terraform-provider-biot-gen2
 
 4. run in terminal - export GITHUB_TOKEN=<github-token>
 
-5. run in terminal - export GPG_PASSPHRASE=<your-gpg-passphrase>
+5. run in terminal - export GPG_PASSPHRASE='<your-gpg-passphrase>' (important to use '' and not "")
 
 6. run in terminal - goreleaser release --clean
 
