@@ -7,10 +7,15 @@ if [ -z "$SHAFILE" ] || [ ! -f "$SHAFILE" ]; then
     exit 1
 fi
 
-echo "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --detach-sign --armor --default-key 7C56BDFFED7D41BE "$SHAFILE"
+echo "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --detach-sign --default-key 7C56BDFFED7D41BE "$SHAFILE"
 if [ $? -eq 0 ]; then
-    mv "${SHAFILE}.asc" "${SHAFILE}.sig"
-    echo "Signed: ${SHAFILE}.sig"
+    # GPG creates .sig file directly (binary signature, not armored)
+    if [ -f "${SHAFILE}.sig" ]; then
+        echo "Signed: ${SHAFILE}.sig"
+    else
+        echo "Error: Signature file not created"
+        exit 1
+    fi
 else
     echo "Error: Failed to sign $SHAFILE"
     exit 1
