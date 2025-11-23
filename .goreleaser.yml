@@ -28,11 +28,9 @@ archives:
 checksum:
   name_template: "SHA256SUMS"
 
-signs:
-  - artifacts: checksum
-    args: ["--detach-sign", "--default-key", "7C56BDFFED7D41BE"]
-    cmd: gpg
-    signature: "${artifact}.sig"
+before:
+  hooks:
+    - 'echo "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --detach-sign --armor --default-key 7C56BDFFED7D41BE dist/SHA256SUMS && mv dist/SHA256SUMS.asc dist/SHA256SUMS.sig'
 
 release:
   github:
