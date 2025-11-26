@@ -42,7 +42,7 @@ Create a GitHub release and automatically upload:
   - SHA256SUMS file
 
 Note: GoReleaser automatically uploads the SHA256SUMS file to the GitHub release. If GPG signing is enabled, you may need to manually upload the SHA256SUMS.sig file:
-  - Go to your release on github - for example - https://github.com/biot-med/terraform-provider-biot-gen2/releases/tag/v1.0.1
+  - Go to your release on github - for example - https://github.com/biot-med/terraform-provider-biot-gen2/releases/tag/v1.0.2
   - Click "Edit"
   - Upload: dist/SHA256SUMS.sig (only if GPG signing is enabled in .goreleaser.yml)
 

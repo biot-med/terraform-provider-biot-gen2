@@ -160,11 +160,17 @@ func attributeSchema() map[string]schema.Attribute {
 		"validation": schema.SingleNestedAttribute{
 			Optional: true,
 			Attributes: map[string]schema.Attribute{
-				"mandatory":     schema.BoolAttribute{Optional: true},
-				"default_value": schema.StringAttribute{Optional: true},
-				"min":           schema.Int64Attribute{Optional: true},
-				"max":           schema.Int64Attribute{Optional: true},
-				"regex":         schema.StringAttribute{Optional: true},
+				"mandatory": schema.BoolAttribute{Optional: true},
+				"default_value": schema.StringAttribute{
+					Optional:    true,
+					Description: "Default value as JSON string. Can be a string, number, object, or array. Examples: '\"text\"', '42', '{\"key\":\"value\"}', '[\"item1\",\"item2\"]'. Use jsonencode() function for complex values.",
+					PlanModifiers: []planmodifier.String{
+						biotplanmodifiers.JsonNormalizePlanModifier{},
+					},
+				},
+				"min":   schema.Int64Attribute{Optional: true},
+				"max":   schema.Int64Attribute{Optional: true},
+				"regex": schema.StringAttribute{Optional: true},
 			},
 		},
 
