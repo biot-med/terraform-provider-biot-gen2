@@ -1,6 +1,14 @@
+## 1.0.2
+
+**Release date**: NOV 26, 2025
+
+## Changes
+
+- Fixed default_value validation to support object and not just strings
+
 ## 1.0.1
 
-**Release date**: Nov 32, 2025
+**Release date**: Nov 23, 2025
 
 ## Changes
 
