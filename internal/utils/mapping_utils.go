@@ -3,11 +3,19 @@ package utils
 import (
 	"context"
 	"encoding/json"
+	"math/big"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // from native to types
+
+func Float64OrNullPtr(n *float64) types.Number {
+	if n == nil {
+		return types.NumberNull()
+	}
+	return types.NumberValue(big.NewFloat(*n))
+}
 
 func InterfaceToJsonString(ctx context.Context, key string, val interface{}) types.String {
 	if val == nil {
@@ -70,6 +78,14 @@ func ConvertStringList(in []string) []types.String {
 }
 
 // from types to native
+
+func Float64OrNilPtr(n types.Number) *float64 {
+	if n.IsNull() || n.IsUnknown() {
+		return nil
+	}
+	val, _ := n.ValueBigFloat().Float64()
+	return &val
+}
 
 func StringOrEmpty(s types.String) string {
 	if s.IsNull() || s.IsUnknown() {

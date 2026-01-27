@@ -163,8 +163,8 @@ func mapToTerraformValidation(ctx context.Context, validation *api.Validation) *
 	return &TerraformValidation{
 		Mandatory:    utils.BoolOrNullPtr(validation.Mandatory),
 		DefaultValue: utils.StringOrNullPtr(validation.DefaultValue),
-		Min:          utils.Int64OrNullPtr(validation.Min),
-		Max:          utils.Int64OrNullPtr(validation.Max),
+		Min:          utils.Float64OrNullPtr(validation.Min),
+		Max:          utils.Float64OrNullPtr(validation.Max),
 		Regex:        utils.StringOrNullPtr(validation.Regex),
 	}
 }
@@ -174,13 +174,10 @@ func mapToTerraformNumericMetaData(ctx context.Context, numericMetaData *api.Num
 		return nil
 	}
 
-	upperRange := utils.Int64OrNullPtr(numericMetaData.UpperRange)
-	lowerRange := utils.Int64OrNullPtr(numericMetaData.LowerRange)
-
 	return &TerraformNumericMetaData{
 		Units:      utils.StringOrNullPtr(numericMetaData.Units),
-		UpperRange: upperRange,
-		LowerRange: lowerRange,
+		UpperRange: utils.Float64OrNullPtr(numericMetaData.UpperRange),
+		LowerRange: utils.Float64OrNullPtr(numericMetaData.LowerRange),
 		SubType:    utils.StringOrNullPtr(numericMetaData.SubType),
 	}
 }

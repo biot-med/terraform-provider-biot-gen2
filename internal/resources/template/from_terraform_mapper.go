@@ -159,11 +159,11 @@ func mapValidation(v *TerraformValidation) *api.Validation {
 	}
 
 	if !v.Min.IsNull() && !v.Min.IsUnknown() {
-		validation.Min = utils.Int64OrNilPtr(v.Min)
+		validation.Min = utils.Float64OrNilPtr(v.Min)
 	}
 
 	if !v.Max.IsNull() && !v.Max.IsUnknown() {
-		validation.Max = utils.Int64OrNilPtr(v.Max)
+		validation.Max = utils.Float64OrNilPtr(v.Max)
 	}
 
 	if !v.Regex.IsNull() && !v.Regex.IsUnknown() {
@@ -178,22 +178,10 @@ func mapNumericMetaData(numericMetaData *TerraformNumericMetaData) *api.NumericM
 		return nil
 	}
 
-	var upperRange *int64
-	if !numericMetaData.UpperRange.IsNull() && !numericMetaData.UpperRange.IsUnknown() {
-		val := numericMetaData.UpperRange.ValueInt64()
-		upperRange = &val
-	}
-
-	var lowerRange *int64
-	if !numericMetaData.LowerRange.IsNull() && !numericMetaData.LowerRange.IsUnknown() {
-		val := numericMetaData.LowerRange.ValueInt64()
-		lowerRange = &val
-	}
-
 	return &api.NumericMetaData{
 		Units:      utils.StringOrNilPtr(numericMetaData.Units),
-		UpperRange: upperRange,
-		LowerRange: lowerRange,
+		UpperRange: utils.Float64OrNilPtr(numericMetaData.UpperRange),
+		LowerRange: utils.Float64OrNilPtr(numericMetaData.LowerRange),
 		SubType:    utils.StringOrNilPtr(numericMetaData.SubType),
 	}
 }
