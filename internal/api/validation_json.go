@@ -14,8 +14,8 @@ func (v *Validation) UnmarshalJSON(data []byte) error {
 	type validationAlias struct {
 		Mandatory    *bool       `json:"mandatory"`
 		DefaultValue interface{} `json:"defaultValue"`
-		Min          *int64      `json:"min"`
-		Max          *int64      `json:"max"`
+		Min          *float64    `json:"min"`
+		Max          *float64    `json:"max"`
 		Regex        *string     `json:"regex"`
 	}
 
@@ -66,8 +66,8 @@ func (v Validation) MarshalJSON() ([]byte, error) {
 	type validationAlias struct {
 		Mandatory    *bool       `json:"mandatory,omitempty"`
 		DefaultValue interface{} `json:"defaultValue,omitempty"`
-		Min          *int64      `json:"min,omitempty"`
-		Max          *int64      `json:"max,omitempty"`
+		Min          *float64    `json:"min,omitempty"`
+		Max          *float64    `json:"max,omitempty"`
 		Regex        *string     `json:"regex,omitempty"`
 	}
 

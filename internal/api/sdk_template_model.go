@@ -145,11 +145,11 @@ type LinkConfiguration struct {
 }
 
 type Validation struct {
-	Mandatory    *bool   `json:"mandatory"`
-	DefaultValue *string `json:"defaultValue"`
-	Min          *int64  `json:"min"`
-	Max          *int64  `json:"max"`
-	Regex        *string `json:"regex"`
+	Mandatory    *bool    `json:"mandatory"`
+	DefaultValue *string  `json:"defaultValue"`
+	Min          *float64 `json:"min"`
+	Max          *float64 `json:"max"`
+	Regex        *string  `json:"regex"`
 }
 
 type ErrorDetails struct {
@@ -177,10 +177,10 @@ type ValidationMetadata struct {
 }
 
 type NumericMetaData struct {
-	Units      *string `json:"units"`
-	UpperRange *int64  `json:"upperRange"`
-	LowerRange *int64  `json:"lowerRange"`
-	SubType    *string `json:"subType"`
+	Units      *string  `json:"units"`
+	UpperRange *float64 `json:"upperRange"`
+	LowerRange *float64 `json:"lowerRange"`
+	SubType    *string  `json:"subType"`
 }
 
 type Category struct {

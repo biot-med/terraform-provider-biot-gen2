@@ -79,8 +79,8 @@ type TerraformLinkConfiguration struct {
 type TerraformValidation struct {
 	Mandatory    types.Bool   `tfsdk:"mandatory"`
 	DefaultValue types.String `tfsdk:"default_value"`
-	Min          types.Int64  `tfsdk:"min"`
-	Max          types.Int64  `tfsdk:"max"`
+	Min          types.Number  `tfsdk:"min"`
+	Max          types.Number  `tfsdk:"max"`
 	Regex        types.String `tfsdk:"regex"`
 }
 
@@ -92,8 +92,8 @@ type TerraformValidationMetadata struct {
 
 type TerraformNumericMetaData struct {
 	Units      types.String `tfsdk:"units"`
-	UpperRange types.Int64  `tfsdk:"upper_range"`
-	LowerRange types.Int64  `tfsdk:"lower_range"`
+	UpperRange types.Number  `tfsdk:"upper_range"`
+	LowerRange types.Number  `tfsdk:"lower_range"`
 	SubType    types.String `tfsdk:"sub_type"`
 }
 
