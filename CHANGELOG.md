@@ -1,3 +1,10 @@
+## 1.0.3
+
+**Release date**: JAN 27, 2026
+
+- fixed lowerange, uperrange, min, max bug - change them from int to number so we ca
+n accept both int and float
+
 ## 1.0.2
 
 **Release date**: NOV 26, 2025
