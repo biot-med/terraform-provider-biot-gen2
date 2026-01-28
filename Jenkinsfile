@@ -96,31 +96,20 @@ pipeline {
                     // Install GoReleaser if not installed
                     sh '''
                         if ! command -v goreleaser &> /dev/null; then
-                            echo "GoReleaser is not installed. Installing..."
+                            echo "GoReleaser is not installed. Installing to user directory..."
                             
-                            # Check if sudo is available
-                            SUDO_CMD=""
-                            if command -v sudo &> /dev/null; then
-                                SUDO_CMD="sudo"
-                            fi
+                            # Install to user-writable directory
+                            INSTALL_DIR="$HOME/.local/bin"
+                            mkdir -p "$INSTALL_DIR"
                             
-                            # Determine install location (use /usr/local/bin if sudo available, otherwise ~/.local/bin)
-                            if [ -n "$SUDO_CMD" ]; then
-                                INSTALL_DIR="/usr/local/bin"
-                            else
-                                INSTALL_DIR="$HOME/.local/bin"
-                                mkdir -p "$INSTALL_DIR"
-                                # Add to PATH for current session
-                                export PATH="$INSTALL_DIR:$PATH"
-                            fi
+                            # Add to PATH for current session
+                            export PATH="$INSTALL_DIR:$PATH"
                             
                             # Install GoReleaser using the official method
                             if command -v curl &> /dev/null; then
                                 curl -sL https://github.com/goreleaser/goreleaser/releases/latest/download/goreleaser_Linux_x86_64.tar.gz | tar -xz -C "$INSTALL_DIR" goreleaser
                                 chmod +x "$INSTALL_DIR/goreleaser"
                                 echo "✓ GoReleaser installed successfully to $INSTALL_DIR"
-                                # Ensure it's in PATH for subsequent commands
-                                export PATH="$INSTALL_DIR:$PATH"
                             else
                                 echo "Error: curl is required to install GoReleaser"
                                 exit 1
@@ -130,83 +119,15 @@ pipeline {
                         fi
                     '''
 
-                    // Install GPG if not installed
+                    // Check if GPG is installed (cannot install without sudo)
                     sh '''
                         if ! command -v gpg &> /dev/null; then
-                            echo "GPG is not installed. Attempting to install..."
-                            
-                            # Check if sudo is available
-                            SUDO_CMD=""
-                            if command -v sudo &> /dev/null; then
-                                SUDO_CMD="sudo"
-                            fi
-                            
-                            # Detect OS and install accordingly
-                            if [ -f /etc/os-release ]; then
-                                . /etc/os-release
-                                OS=$ID
-                            else
-                                OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-                            fi
-                            
-                            INSTALLED=0
-                            
-                            # Install GPG based on OS
-                            if [ "$OS" = "ubuntu" ] || [ "$OS" = "debian" ]; then
-                                if [ -n "$SUDO_CMD" ]; then
-                                    $SUDO_CMD apt-get update -qq
-                                    $SUDO_CMD apt-get install -y -qq gnupg2 && INSTALLED=1
-                                else
-                                    echo "Warning: sudo not available. Cannot install GPG via apt-get."
-                                    echo "Please ensure GPG is pre-installed or install manually."
-                                fi
-                            elif [ "$OS" = "centos" ] || [ "$OS" = "rhel" ] || [ "$OS" = "fedora" ]; then
-                                if [ -n "$SUDO_CMD" ]; then
-                                    if command -v dnf &> /dev/null; then
-                                        $SUDO_CMD dnf install -y -q gnupg2 && INSTALLED=1
-                                    else
-                                        $SUDO_CMD yum install -y -q gnupg2 && INSTALLED=1
-                                    fi
-                                else
-                                    echo "Warning: sudo not available. Cannot install GPG via yum/dnf."
-                                    echo "Please ensure GPG is pre-installed or install manually."
-                                fi
-                            elif [ "$OS" = "darwin" ] || [ "$OS" = "macos" ]; then
-                                if command -v brew &> /dev/null; then
-                                    brew install gnupg && INSTALLED=1
-                                else
-                                    echo "Warning: Homebrew not available. Cannot install GPG on macOS."
-                                    echo "Please ensure GPG is pre-installed or install manually."
-                                fi
-                            else
-                                echo "Warning: Unknown OS. Attempting to install GPG with generic package manager"
-                                if [ -n "$SUDO_CMD" ]; then
-                                    if command -v apt-get &> /dev/null; then
-                                        $SUDO_CMD apt-get update -qq && $SUDO_CMD apt-get install -y -qq gnupg2 && INSTALLED=1
-                                    elif command -v yum &> /dev/null; then
-                                        $SUDO_CMD yum install -y -q gnupg2 && INSTALLED=1
-                                    elif command -v dnf &> /dev/null; then
-                                        $SUDO_CMD dnf install -y -q gnupg2 && INSTALLED=1
-                                    else
-                                        echo "Error: Could not determine package manager to install GPG"
-                                    fi
-                                else
-                                    echo "Warning: sudo not available and could not determine package manager."
-                                    echo "Please ensure GPG is pre-installed or install manually."
-                                fi
-                            fi
-                            
-                            # Verify installation
-                            if command -v gpg &> /dev/null; then
-                                echo "✓ GPG is now available"
-                            elif [ $INSTALLED -eq 1 ]; then
-                                echo "✓ GPG installation completed (may need to refresh PATH)"
-                            else
-                                echo "Warning: GPG installation was not successful. The build may fail if GPG signing is required."
-                                echo "Please ensure GPG is installed and available in PATH before running the release."
-                            fi
+                            echo "Warning: GPG is not installed."
+                            echo "GPG is required for signing releases. Please ensure GPG is pre-installed on the Jenkins agent."
+                            echo "The build will continue but may fail during the release stage if GPG signing is required."
                         else
-                            echo "✓ GPG is already installed"
+                            echo "✓ GPG is installed"
+                            gpg --version | head -1
                         fi
                     '''
                 }
