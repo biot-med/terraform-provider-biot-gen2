@@ -65,7 +65,8 @@ pipeline {
                     }
                     
                     // Validate version format (X.Y.Z)
-                    if (!env.VERSION.matches(/^\\d+\\.\\d+\\.\\d+$/)) {
+                    // Use ==~ operator for regex matching in Groovy
+                    if (!(env.VERSION ==~ /^\d+\.\d+\.\d+$/)) {
                         error("Invalid version format in main.go: ${env.VERSION}. Expected format: X.Y.Z")
                     }
                     
