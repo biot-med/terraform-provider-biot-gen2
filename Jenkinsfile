@@ -138,11 +138,35 @@ pipeline {
             steps {
                 script {
                     sh '''
+                        # Fetch tags from remote to ensure we have the latest tag information
+                        git fetch --tags origin || echo "Warning: Failed to fetch tags, continuing with local check"
+                        
+                        # Check if tag exists locally or remotely
+                        TAG_EXISTS_LOCAL=false
+                        TAG_EXISTS_REMOTE=false
+                        
+                        # Check local tags
                         if git rev-parse "${VERSION_TAG}" >/dev/null 2>&1; then
+                            TAG_EXISTS_LOCAL=true
+                        fi
+                        
+                        # Check remote tags
+                        if git ls-remote --tags origin | grep -q "refs/tags/${VERSION_TAG}$"; then
+                            TAG_EXISTS_REMOTE=true
+                        fi
+                        
+                        # If tag exists anywhere, fail
+                        if [ "$TAG_EXISTS_LOCAL" = true ] || [ "$TAG_EXISTS_REMOTE" = true ]; then
                             echo "Error: Tag ${VERSION_TAG} already exists"
+                            if [ "$TAG_EXISTS_LOCAL" = true ]; then
+                                echo "  - Tag exists locally"
+                            fi
+                            if [ "$TAG_EXISTS_REMOTE" = true ]; then
+                                echo "  - Tag exists on remote (origin)"
+                            fi
                             exit 1
                         else
-                            echo "✓ Tag ${VERSION_TAG} does not exist yet"
+                            echo "✓ Tag ${VERSION_TAG} does not exist yet (checked both local and remote)"
                         fi
                     '''
                 }
@@ -153,6 +177,10 @@ pipeline {
             steps {
                 script {
                     sh '''
+                        # Configure git user (required for creating tags)
+                        git config user.email "jenkins@biot-med.com" || true
+                        git config user.name "Jenkins CI" || true
+                        
                         # Create the tag
                         git tag -a "${VERSION_TAG}" -m "Release ${VERSION_TAG}"
                         echo "✓ Created git tag: ${VERSION_TAG}"
