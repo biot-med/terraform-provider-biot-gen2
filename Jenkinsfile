@@ -248,18 +248,15 @@ pipeline {
                     sh '''
                         # Ensure PATH includes common install locations
                         export PATH="$HOME/.local/go/bin:$HOME/.local/bin:/usr/local/bin:$PATH"
-                        export GPG_PASSPHRASE="${GPG_PASSPHRASE}"
+                        export GPG_PASSPHRASE="${GPG_PASSPHRASE}"                
                         export GPG_TTY=$(tty)
+                        export GITHUB_TOKEN="${GITHUB_TOKEN}"
                         
                         # Verify goreleaser is available
                         go version
                         which goreleaser
                         goreleaser --version
-                        
-                        # Export environment variables (using single quotes for GPG_PASSPHRASE as per instructions)
-                        export GITHUB_TOKEN="${GITHUB_TOKEN}"
-                        export GPG_PASSPHRASE='${GPG_PASSPHRASE}'
-                        
+                              
                         # Run GoReleaser
                         goreleaser release --clean
                         
