@@ -14,7 +14,7 @@ pipeline {
 
     options {
         // Only run on master branch
-        skipDefaultCheckout(false)
+        skipDefaultCheckout(true)
     }
 
     environment {
@@ -23,6 +23,19 @@ pipeline {
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/master']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/biot-med/terraform-provider-biot-gen2.git',
+                        credentialsId: 'github_token_for_terraform'
+                    ]]
+                ])
+            }
+        }
+        
         stage('Check Branch') {
             steps {
                 script {
