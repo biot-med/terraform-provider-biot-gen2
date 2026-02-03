@@ -188,19 +188,15 @@ pipeline {
 
         stage('Create Git Tag') {
             steps {
-                script {
+                withCredentials([string(credentialsId: 'github_token_for_terraform', variable: 'GITHUB_TOKEN')]) {
                     sh '''
-                        # Configure git user (required for creating tags)
-                        git config user.email "jenkins@biot-med.com" || true
-                        git config user.name "Jenkins CI" || true
-                        
-                        # Create the tag
+                        git config user.email "jenkins@biot-med.com"
+                        git config user.name "Jenkins CI"
+
                         git tag -a "${VERSION_TAG}" -m "Release ${VERSION_TAG}"
-                        echo "✓ Created git tag: ${VERSION_TAG}"
-                        
-                        # Push the tag to remote
-                        git push origin "${VERSION_TAG}"
-                        echo "✓ Pushed tag to remote"
+
+                        git push https://$GITHUB_TOKEN@github.com/biot-med/terraform-provider-biot-gen2.git ${VERSION_TAG}
+                        echo "Pushed tag to remote"
                     '''
                 }
             }
