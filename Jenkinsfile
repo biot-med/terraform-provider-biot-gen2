@@ -235,21 +235,10 @@ pipeline {
                     
                     sh '''
                         # Ensure PATH includes common install locations
-                        export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
-                        
-                        # Find goreleaser if not in PATH
-                        if ! command -v goreleaser &> /dev/null; then
-                            if [ -f "$HOME/.local/bin/goreleaser" ]; then
-                                export PATH="$HOME/.local/bin:$PATH"
-                            elif [ -f "/usr/local/bin/goreleaser" ]; then
-                                export PATH="/usr/local/bin:$PATH"
-                            else
-                                echo "Error: goreleaser not found. Please ensure it is installed."
-                                exit 1
-                            fi
-                        fi
+                        export PATH="$HOME/.local/go/bin:$HOME/.local/bin:/usr/local/bin:$PATH"
                         
                         # Verify goreleaser is available
+                        go version
                         which goreleaser
                         goreleaser --version
                         
