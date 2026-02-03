@@ -28,7 +28,7 @@ n accept both int and float
 
 ## 1.0.0
 
-**Release date**: Sep 30, 2025
+**Release date**: Sep 30, 2025 
 
 ## Changes
 

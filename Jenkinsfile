@@ -230,7 +230,7 @@ pipeline {
 
         stage('Import GPG key') {
             steps {
-                withCredentials([file(credentialsId: 'gpg_private_key', variable: 'GPG_KEY_FILE')]) {
+                withCredentials([file(credentialsId: 'gpg-private-key', variable: 'GPG_KEY_FILE')]) {
                 sh '''
                     gpg --batch --import "$GPG_KEY_FILE"
                     gpg --list-secret-keys --keyid-format LONG
