@@ -96,7 +96,7 @@ pipeline {
             steps {
                 script {
                     echo 'Checking and installing prerequisites...'
-                    
+
                     // Check if git working tree is clean
                     sh '''
                         if ! git diff-index --quiet HEAD --; then
@@ -106,18 +106,43 @@ pipeline {
                         echo "✓ Git working tree is clean"
                     '''
 
+                    // Install Go if not installed
+                    sh '''
+                        if ! command -v go &> /dev/null; then
+                            echo "Go is not installed. Installing Go to user directory..."
+
+                            # Install to user-writable directory
+                            GO_VERSION="1.22.3"
+                            INSTALL_DIR="$HOME/.local"
+                            mkdir -p "$INSTALL_DIR"
+
+                            # Download and install Go
+                            wget -q https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz -O /tmp/go.tar.gz
+                            tar -C "$INSTALL_DIR" -xzf /tmp/go.tar.gz
+                            rm /tmp/go.tar.gz
+
+                            # Add Go to PATH for this session
+                            export PATH="$INSTALL_DIR/go/bin:$PATH"
+
+                            echo "✓ Go installed successfully to $INSTALL_DIR/go"
+                            go version
+                        else
+                            echo "✓ Go is already installed"
+                            go version
+                        fi
+                    '''
+
                     // Install GoReleaser if not installed
                     sh '''
                         if ! command -v goreleaser &> /dev/null; then
                             echo "GoReleaser is not installed. Installing to user directory..."
-                            
-                            # Install to user-writable directory
+
                             INSTALL_DIR="$HOME/.local/bin"
                             mkdir -p "$INSTALL_DIR"
-                            
+
                             # Add to PATH for current session
                             export PATH="$INSTALL_DIR:$PATH"
-                            
+
                             # Install GoReleaser using the official method
                             if command -v curl &> /dev/null; then
                                 curl -sL https://github.com/goreleaser/goreleaser/releases/latest/download/goreleaser_Linux_x86_64.tar.gz | tar -xz -C "$INSTALL_DIR" goreleaser
@@ -146,6 +171,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Check Tag Exists') {
             steps {
