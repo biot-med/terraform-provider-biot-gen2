@@ -248,6 +248,8 @@ pipeline {
                     sh '''
                         # Ensure PATH includes common install locations
                         export PATH="$HOME/.local/go/bin:$HOME/.local/bin:/usr/local/bin:$PATH"
+                        export GPG_PASSPHRASE="${GPG_PASSPHRASE}"
+                        export GPG_TTY=$(tty)
                         
                         # Verify goreleaser is available
                         go version
