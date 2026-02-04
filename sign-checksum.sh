@@ -18,7 +18,7 @@ gpg \
   --yes \
   --pinentry-mode loopback \
   --passphrase "${GPG_PASSPHRASE}" \
-  --default-key 7C56BDFFED7D41BE \
+  --default-key D09266D4C73C32D8 \
   --detach-sign \
   "$SHAFILE"
 
