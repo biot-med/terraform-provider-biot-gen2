@@ -51,5 +51,5 @@ Type conversion helpers between Terraform framework types and native Go types, u
 
 - **`value_json` fields** accept arbitrary JSON; use `jsonencode()` in Terraform configs and the `JsonNormalizePlanModifier` handles diff normalization.
 - **No unit tests exist** in this repo — acceptance tests (`testacc`) require a running BioT server.
-- **Releases** are automated via Jenkins + GoReleaser; see `HOWTO-PUBLISH.md` for the manual release process.
+- **Releases** are automated via Jenkins — pushing to `master` triggers the pipeline which builds and publishes via GoReleaser. No manual release steps needed.
 - **Provider version** is set in `main.go` and must match the version in `build.sh` and `.goreleaser.yml` when cutting a release.
