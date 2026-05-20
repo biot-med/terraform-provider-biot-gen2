@@ -5,6 +5,7 @@ example.tf
 terraform.tfplan
 terraform.tfstate
 terraform-provider-biot
+terraform-provider-biot-gen2
 terraform-provider-biot.exe
 bin/
 dist/

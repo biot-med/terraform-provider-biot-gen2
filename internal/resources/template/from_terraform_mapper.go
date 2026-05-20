@@ -152,6 +152,7 @@ func mapValidation(v *TerraformValidation) *api.Validation {
 
 	validation := &api.Validation{
 		Mandatory: utils.BoolOrNilPtr(v.Mandatory),
+		Unique:    utils.BoolOrNilPtr(v.Unique),
 	}
 
 	if !v.DefaultValue.IsNull() && !v.DefaultValue.IsUnknown() {

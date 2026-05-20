@@ -274,7 +274,6 @@ func (biotSdkImpl biotSdkImpl) SearchTemplates(ctx context.Context, accessToken 
 		return SearchTemplatesResponse{}, parseAPIError(httpResponse)
 	}
 
-	// Parse response body into TemplateResponse
 	var searchRemplatesResponse SearchTemplatesResponse
 	if err := json.NewDecoder(httpResponse.Body).Decode(&searchRemplatesResponse); err != nil {
 		return SearchTemplatesResponse{}, err

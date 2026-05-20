@@ -17,6 +17,7 @@ func (v *Validation) UnmarshalJSON(data []byte) error {
 		Min          *float64    `json:"min"`
 		Max          *float64    `json:"max"`
 		Regex        *string     `json:"regex"`
+		Unique       *bool       `json:"unique"`
 	}
 
 	var alias validationAlias
@@ -29,6 +30,7 @@ func (v *Validation) UnmarshalJSON(data []byte) error {
 	v.Min = alias.Min
 	v.Max = alias.Max
 	v.Regex = alias.Regex
+	v.Unique = alias.Unique
 
 	// Convert defaultValue to string if present
 	if alias.DefaultValue != nil {
@@ -69,6 +71,7 @@ func (v Validation) MarshalJSON() ([]byte, error) {
 		Min          *float64    `json:"min,omitempty"`
 		Max          *float64    `json:"max,omitempty"`
 		Regex        *string     `json:"regex,omitempty"`
+		Unique       *bool       `json:"unique,omitempty"`
 	}
 
 	alias := validationAlias{
@@ -76,6 +79,7 @@ func (v Validation) MarshalJSON() ([]byte, error) {
 		Min:       v.Min,
 		Max:       v.Max,
 		Regex:     v.Regex,
+		Unique:    v.Unique,
 	}
 
 	// Parse the stored string to get the actual value

@@ -168,9 +168,10 @@ func attributeSchema() map[string]schema.Attribute {
 						biotplanmodifiers.JsonNormalizePlanModifier{},
 					},
 				},
-				"min":   schema.NumberAttribute{Optional: true},
-				"max":   schema.NumberAttribute{Optional: true},
-				"regex": schema.StringAttribute{Optional: true},
+				"min":    schema.NumberAttribute{Optional: true},
+				"max":    schema.NumberAttribute{Optional: true},
+				"regex":  schema.StringAttribute{Optional: true},
+				"unique": schema.BoolAttribute{Optional: true},
 			},
 		},
 
