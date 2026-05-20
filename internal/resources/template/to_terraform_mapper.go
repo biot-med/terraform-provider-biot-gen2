@@ -166,6 +166,7 @@ func mapToTerraformValidation(ctx context.Context, validation *api.Validation) *
 		Min:          utils.Float64OrNullPtr(validation.Min),
 		Max:          utils.Float64OrNullPtr(validation.Max),
 		Regex:        utils.StringOrNullPtr(validation.Regex),
+		Unique:       utils.BoolOrNullPtr(validation.Unique),
 	}
 }
 

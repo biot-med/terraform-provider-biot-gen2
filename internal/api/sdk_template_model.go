@@ -150,6 +150,7 @@ type Validation struct {
 	Min          *float64 `json:"min"`
 	Max          *float64 `json:"max"`
 	Regex        *string  `json:"regex"`
+	Unique       *bool    `json:"unique,omitempty"`
 }
 
 type ErrorDetails struct {
