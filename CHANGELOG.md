@@ -1,3 +1,8 @@
+## 1.0.7
+
+**Release date**: Jun 03, 2026
+- [SOFT-9695] Vulnerability fixes
+
 ## 1.0.4
 
 **Release date**: JAN 27, 2026
