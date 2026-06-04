@@ -1,3 +1,10 @@
+## 1.0.9
+
+**Release date**: Jun 04, 2026
+- [SOFT-9662] added branding category to organization template
+    - Support supported mime types in validation
+    - Support Public access in attribute
+
 ## 1.0.8
 
 **Release date**: Jun 21, 2026

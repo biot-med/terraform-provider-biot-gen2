@@ -70,6 +70,7 @@ type BaseAttribute struct {
 	ID                     string                  `json:"id"`
 	DisplayName            string                  `json:"displayName"`
 	Phi                    bool                    `json:"phi"`
+	PublicAccess           bool                    `json:"publicAccess"`
 	ReferenceConfiguration *ReferenceConfiguration `json:"referenceConfiguration"`
 	LinkConfiguration      *LinkConfiguration      `json:"linkConfiguration"`
 	Validation             *Validation             `json:"validation"`
@@ -146,12 +147,13 @@ type LinkConfiguration struct {
 }
 
 type Validation struct {
-	Mandatory    *bool    `json:"mandatory"`
-	DefaultValue *string  `json:"defaultValue"`
-	Min          *float64 `json:"min"`
-	Max          *float64 `json:"max"`
-	Regex        *string  `json:"regex"`
-	Unique       *bool    `json:"unique,omitempty"`
+	Mandatory          *bool    `json:"mandatory"`
+	DefaultValue       *string  `json:"defaultValue"`
+	Min                *float64 `json:"min"`
+	Max                *float64 `json:"max"`
+	Regex              *string  `json:"regex"`
+	Unique             *bool    `json:"unique,omitempty"`
+	SupportedMimeTypes []string `json:"supportedMimeTypes,omitempty"`
 }
 
 type ErrorDetails struct {

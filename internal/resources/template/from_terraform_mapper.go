@@ -58,6 +58,7 @@ func mapBaseAttribute(ctx context.Context, attr BaseTerraformAttribute) api.Base
 		ID:                     attr.ID.ValueString(),
 		DisplayName:            attr.DisplayName.ValueString(),
 		Phi:                    attr.Phi.ValueBool(),
+		PublicAccess:           attr.PublicAccess.ValueBool(),
 		ReferenceConfiguration: mapReferenceConfiguration(attr.ReferenceConfiguration),
 		LinkConfiguration:      mapLinkConfiguration(attr.LinkConfiguration),
 		Validation:             mapValidation(attr.Validation),
@@ -170,6 +171,10 @@ func mapValidation(v *TerraformValidation) *api.Validation {
 
 	if !v.Regex.IsNull() && !v.Regex.IsUnknown() {
 		validation.Regex = utils.StringOrNilPtr(v.Regex)
+	}
+
+	if len(v.SupportedMimeTypes) > 0 {
+		validation.SupportedMimeTypes = utils.ConvertTerraformStringList(v.SupportedMimeTypes)
 	}
 
 	return validation

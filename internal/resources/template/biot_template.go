@@ -127,12 +127,13 @@ func attributeSchema() map[string]schema.Attribute {
 			Computed: true,
 			// Plan-modifier is implemeneted from the "parent" attribute.
 		},
-		"display_name": schema.StringAttribute{Optional: true},
-		"phi":          schema.BoolAttribute{Optional: true},
-		"name":         schema.StringAttribute{Required: true},
-		"type":         schema.StringAttribute{Required: true},
-		"category":     schema.StringAttribute{Optional: true},
-		"base_path":    schema.StringAttribute{Optional: true},
+		"display_name":  schema.StringAttribute{Optional: true},
+		"phi":           schema.BoolAttribute{Optional: true},
+		"public_access": schema.BoolAttribute{Optional: true},
+		"name":          schema.StringAttribute{Required: true},
+		"type":          schema.StringAttribute{Required: true},
+		"category":      schema.StringAttribute{Optional: true},
+		"base_path":     schema.StringAttribute{Optional: true},
 
 		"reference_configuration": schema.SingleNestedAttribute{
 			Optional: true,
@@ -172,6 +173,10 @@ func attributeSchema() map[string]schema.Attribute {
 				"max":    schema.NumberAttribute{Optional: true},
 				"regex":  schema.StringAttribute{Optional: true},
 				"unique": schema.BoolAttribute{Optional: true},
+				"supported_mime_types": schema.ListAttribute{
+					ElementType: types.StringType,
+					Optional:    true,
+				},
 			},
 		},
 

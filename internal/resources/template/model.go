@@ -24,6 +24,7 @@ type BaseTerraformAttribute struct {
 	ID                     types.String                     `tfsdk:"id"`
 	DisplayName            types.String                     `tfsdk:"display_name"`
 	Phi                    types.Bool                       `tfsdk:"phi"`
+	PublicAccess           types.Bool                       `tfsdk:"public_access"`
 	ReferenceConfiguration *TerraformReferenceConfiguration `tfsdk:"reference_configuration"`
 	LinkConfiguration      *TerraformLinkConfiguration      `tfsdk:"link_configuration"`
 	Validation             *TerraformValidation             `tfsdk:"validation"`
@@ -78,12 +79,13 @@ type TerraformLinkConfiguration struct {
 }
 
 type TerraformValidation struct {
-	Mandatory    types.Bool   `tfsdk:"mandatory"`
-	DefaultValue types.String `tfsdk:"default_value"`
-	Min          types.Number `tfsdk:"min"`
-	Max          types.Number `tfsdk:"max"`
-	Regex        types.String `tfsdk:"regex"`
-	Unique       types.Bool   `tfsdk:"unique"`
+	Mandatory          types.Bool     `tfsdk:"mandatory"`
+	DefaultValue       types.String   `tfsdk:"default_value"`
+	Min                types.Number   `tfsdk:"min"`
+	Max                types.Number   `tfsdk:"max"`
+	Regex              types.String   `tfsdk:"regex"`
+	Unique             types.Bool     `tfsdk:"unique"`
+	SupportedMimeTypes []types.String `tfsdk:"supported_mime_types"`
 }
 
 type TerraformValidationMetadata struct {

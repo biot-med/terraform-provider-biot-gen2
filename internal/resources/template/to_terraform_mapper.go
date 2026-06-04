@@ -71,6 +71,7 @@ func mapAttributeResponseToTerrformAttribute(ctx context.Context, attr api.BaseA
 		ID:                     types.StringValue(attr.ID),
 		DisplayName:            types.StringValue(attr.DisplayName),
 		Phi:                    types.BoolValue(attr.Phi),
+		PublicAccess:           types.BoolValue(attr.PublicAccess),
 		Type:                   types.StringValue(attr.Type),
 		Category:               mapToTerraformCategory(ctx, attr.Category),
 		SelectableValues:       mapToTerraformSelectableValues(ctx, attr.Type, attr.SelectableValues),
@@ -161,7 +162,7 @@ func mapToTerraformValidation(ctx context.Context, validation *api.Validation) *
 		return nil
 	}
 
-	return &TerraformValidation{
+	result := &TerraformValidation{
 		Mandatory:    utils.BoolOrNullPtr(validation.Mandatory),
 		DefaultValue: utils.StringOrNullPtr(validation.DefaultValue),
 		Min:          utils.Float64OrNullPtr(validation.Min),
@@ -169,6 +170,12 @@ func mapToTerraformValidation(ctx context.Context, validation *api.Validation) *
 		Regex:        utils.StringOrNullPtr(validation.Regex),
 		Unique:       utils.BoolOrNullPtr(validation.Unique),
 	}
+
+	if len(validation.SupportedMimeTypes) > 0 {
+		result.SupportedMimeTypes = utils.ConvertStringList(validation.SupportedMimeTypes)
+	}
+
+	return result
 }
 
 func mapToTerraformNumericMetaData(ctx context.Context, numericMetaData *api.NumericMetaData) *TerraformNumericMetaData {
