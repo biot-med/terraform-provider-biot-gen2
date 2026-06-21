@@ -185,6 +185,26 @@ func attributeSchema() map[string]schema.Attribute {
 			},
 		},
 
+		"ui_configuration": schema.SingleNestedAttribute{
+			Optional:    true,
+			Description: "Display configuration for the attribute value. 'date' applies to DATE attributes, 'date_time' to DATE_TIME attributes. Styles are verbosity levels (SHORT, MEDIUM, LONG, FULL); the exact rendering is locale-dependent.",
+			Attributes: map[string]schema.Attribute{
+				"date": schema.SingleNestedAttribute{
+					Optional: true,
+					Attributes: map[string]schema.Attribute{
+						"date_style": schema.StringAttribute{Optional: true},
+					},
+				},
+				"date_time": schema.SingleNestedAttribute{
+					Optional: true,
+					Attributes: map[string]schema.Attribute{
+						"date_style": schema.StringAttribute{Optional: true},
+						"time_style": schema.StringAttribute{Optional: true},
+					},
+				},
+			},
+		},
+
 		"selectable_values": schema.SetNestedAttribute{
 			Optional: true,
 			NestedObject: schema.NestedAttributeObject{

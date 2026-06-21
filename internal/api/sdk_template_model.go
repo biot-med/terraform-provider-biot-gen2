@@ -74,6 +74,7 @@ type BaseAttribute struct {
 	LinkConfiguration      *LinkConfiguration      `json:"linkConfiguration"`
 	Validation             *Validation             `json:"validation"`
 	NumericMetaData        *NumericMetaData        `json:"numericMetaData"`
+	UiConfiguration        *UiConfiguration        `json:"uiConfiguration,omitempty"`
 	Type                   string                  `json:"type"`
 	SelectableValues       []SelectableValue       `json:"selectableValues"`
 	ValidationMetadata     *ValidationMetadata     `json:"validationMetadata,omitempty"`
@@ -182,6 +183,20 @@ type NumericMetaData struct {
 	UpperRange *float64 `json:"upperRange"`
 	LowerRange *float64 `json:"lowerRange"`
 	SubType    *string  `json:"subType"`
+}
+
+type UiConfiguration struct {
+	Date     *DateUiConfiguration     `json:"date,omitempty"`
+	DateTime *DateTimeUiConfiguration `json:"dateTime,omitempty"`
+}
+
+type DateUiConfiguration struct {
+	DateStyle *string `json:"dateStyle,omitempty"`
+}
+
+type DateTimeUiConfiguration struct {
+	DateStyle *string `json:"dateStyle,omitempty"`
+	TimeStyle *string `json:"timeStyle,omitempty"`
 }
 
 type Category struct {

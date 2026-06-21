@@ -78,6 +78,7 @@ func mapAttributeResponseToTerrformAttribute(ctx context.Context, attr api.BaseA
 		LinkConfiguration:      mapToTerraformLinkConfiguration(ctx, attr.LinkConfiguration),
 		Validation:             mapToTerraformValidation(ctx, attr.Validation),
 		NumericMetaData:        mapToTerraformNumericMetaData(ctx, attr.NumericMetaData),
+		UiConfiguration:        mapToTerraformUiConfiguration(ctx, attr.UiConfiguration),
 	}
 }
 
@@ -181,6 +182,29 @@ func mapToTerraformNumericMetaData(ctx context.Context, numericMetaData *api.Num
 		LowerRange: utils.Float64OrNullPtr(numericMetaData.LowerRange),
 		SubType:    utils.StringOrNullPtr(numericMetaData.SubType),
 	}
+}
+
+func mapToTerraformUiConfiguration(ctx context.Context, uiConfiguration *api.UiConfiguration) *TerraformUiConfiguration {
+	if uiConfiguration == nil {
+		return nil
+	}
+
+	result := &TerraformUiConfiguration{}
+
+	if uiConfiguration.Date != nil {
+		result.Date = &TerraformDateUiConfiguration{
+			DateStyle: utils.StringOrNullPtr(uiConfiguration.Date.DateStyle),
+		}
+	}
+
+	if uiConfiguration.DateTime != nil {
+		result.DateTime = &TerraformDateTimeUiConfiguration{
+			DateStyle: utils.StringOrNullPtr(uiConfiguration.DateTime.DateStyle),
+			TimeStyle: utils.StringOrNullPtr(uiConfiguration.DateTime.TimeStyle),
+		}
+	}
+
+	return result
 }
 
 func mapToTerraformParentTemplateID(ctx context.Context, parentTemplate *api.ParentTemplate) types.String {

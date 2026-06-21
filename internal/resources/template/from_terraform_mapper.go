@@ -62,6 +62,7 @@ func mapBaseAttribute(ctx context.Context, attr BaseTerraformAttribute) api.Base
 		LinkConfiguration:      mapLinkConfiguration(attr.LinkConfiguration),
 		Validation:             mapValidation(attr.Validation),
 		NumericMetaData:        mapNumericMetaData(attr.NumericMetaData),
+		UiConfiguration:        mapUiConfiguration(attr.UiConfiguration),
 		Type:                   attr.Type.ValueString(),
 		SelectableValues:       mapSelectableValues(attr.Name.ValueString(), attr.SelectableValues),
 	}
@@ -185,6 +186,29 @@ func mapNumericMetaData(numericMetaData *TerraformNumericMetaData) *api.NumericM
 		LowerRange: utils.Float64OrNilPtr(numericMetaData.LowerRange),
 		SubType:    utils.StringOrNilPtr(numericMetaData.SubType),
 	}
+}
+
+func mapUiConfiguration(uiConfiguration *TerraformUiConfiguration) *api.UiConfiguration {
+	if uiConfiguration == nil {
+		return nil
+	}
+
+	result := &api.UiConfiguration{}
+
+	if uiConfiguration.Date != nil {
+		result.Date = &api.DateUiConfiguration{
+			DateStyle: utils.StringOrNilPtr(uiConfiguration.Date.DateStyle),
+		}
+	}
+
+	if uiConfiguration.DateTime != nil {
+		result.DateTime = &api.DateTimeUiConfiguration{
+			DateStyle: utils.StringOrNilPtr(uiConfiguration.DateTime.DateStyle),
+			TimeStyle: utils.StringOrNilPtr(uiConfiguration.DateTime.TimeStyle),
+		}
+	}
+
+	return result
 }
 
 func mapSelectableValues(attributeType string, vals []TerraformSelectableValue) []api.SelectableValue {

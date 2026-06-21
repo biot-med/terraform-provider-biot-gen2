@@ -1,3 +1,8 @@
+## 1.0.8
+
+**Release date**: Jun 21, 2026
+- [SOFT-9713] Added `ui_configuration` to template attributes for configuring date/date-time display style
+
 ## 1.0.7
 
 **Release date**: Jun 03, 2026
