@@ -28,6 +28,7 @@ type BaseTerraformAttribute struct {
 	LinkConfiguration      *TerraformLinkConfiguration      `tfsdk:"link_configuration"`
 	Validation             *TerraformValidation             `tfsdk:"validation"`
 	NumericMetaData        *TerraformNumericMetaData        `tfsdk:"numeric_meta_data"`
+	UiConfiguration        *TerraformUiConfiguration        `tfsdk:"ui_configuration"`
 	Type                   types.String                     `tfsdk:"type"`
 	Category               types.String                     `tfsdk:"category"`
 	SelectableValues       []TerraformSelectableValue       `tfsdk:"selectable_values"`
@@ -98,6 +99,20 @@ type TerraformNumericMetaData struct {
 	UpperRange types.Number `tfsdk:"upper_range"`
 	LowerRange types.Number `tfsdk:"lower_range"`
 	SubType    types.String `tfsdk:"sub_type"`
+}
+
+type TerraformUiConfiguration struct {
+	Date     *TerraformDateUiConfiguration     `tfsdk:"date"`
+	DateTime *TerraformDateTimeUiConfiguration `tfsdk:"date_time"`
+}
+
+type TerraformDateUiConfiguration struct {
+	DateStyle types.String `tfsdk:"date_style"`
+}
+
+type TerraformDateTimeUiConfiguration struct {
+	DateStyle types.String `tfsdk:"date_style"`
+	TimeStyle types.String `tfsdk:"time_style"`
 }
 
 type TerraformSelectableValue struct {
