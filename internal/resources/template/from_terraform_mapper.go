@@ -171,6 +171,10 @@ func mapValidation(v *TerraformValidation) *api.Validation {
 		validation.Regex = utils.StringOrNilPtr(v.Regex)
 	}
 
+	if len(v.SupportedMimeTypes) > 0 {
+		validation.SupportedMimeTypes = utils.ConvertTerraformStringList(v.SupportedMimeTypes)
+	}
+
 	return validation
 }
 

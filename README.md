@@ -17,21 +17,36 @@ First, make sure all dependencies are downloaded:
 go mod tidy
 ```
 
-### Step 2: Build the provider
+### Step 2: Build and install the provider (recommended)
 
-Build the provider binary:
+Use the **`build-all.sh`** script. It reads the version from `main.go`, builds the
+provider, and installs it into Terraform's local plugin mirror for **all macOS
+architectures** (`darwin_arm64` **and** `darwin_amd64`):
 
 ```bash
-go build -o terraform-provider-biot-gen2
+./build-all.sh
 ```
 
-This creates a file called `terraform-provider-biot-gen2` (on macOS/Linux) or `terraform-provider-biot-gen2.exe` (on Windows).
+Installing both architectures matters: Terraform loads the provider for the arch
+of the **terraform** binary, which is not always your CPU's arch. On Apple Silicon
+you may run a native `arm64` Terraform *or* an `amd64` Terraform under Rosetta — if
+the provider is only installed for one arch, Terraform silently keeps using a
+previously installed (stale) binary from the other arch's folder.
 
-### Step 3: Install the provider locally
+> ⚠️ **`build.sh` is deprecated.** It installs **only `darwin_arm64`**, so Terraform
+> running as `amd64` (e.g. under Rosetta) won't pick up your build and will keep
+> loading whatever is already in the `darwin_amd64` folder. **Use `build-all.sh`.**
+
+After installing, re-run `terraform init` (delete `.terraform` and
+`.terraform.lock.hcl` first if it complains about checksums, since a locally built
+binary won't match the registry hash).
+
+The rest of this section documents the manual install steps `build-all.sh`
+automates — you normally don't need them.
+
+#### For macOS users (manual — usually not needed)
 
 **Important**: The version number in this example is `1.0.0`. Change this if you're using a different version.
-
-#### For macOS users
 
 **Step 3a: Check your system setup**
 
@@ -118,19 +133,27 @@ terraform plan
 
 ## Making changes and rebuilding
 
-When you make changes to the provider code, follow the **Daily Development Workflow** above:
+When you make changes to the provider code:
 
-1. **Rebuild the provider:**
+1. **Rebuild and reinstall (all archs):**
    ```bash
-   go build -o terraform-provider-biot-gen2
+   ./build-all.sh
    ```
 
-2. **Reinstall the provider** using the copy command from the workflow section
+2. **Re-init the consuming project** (clear cache/lock if needed, since the local
+   binary won't match the registry checksum):
+   ```bash
+   rm -rf .terraform .terraform.lock.hcl && terraform init
+   ```
 
 3. **Test your changes:**
    ```bash
    terraform plan
    ```
+
+> Do **not** use the deprecated `build.sh` for this — it only installs
+> `darwin_arm64`, so an `amd64` Terraform keeps running the old binary and your
+> changes appear to have no effect.
 
 ## Troubleshooting
 

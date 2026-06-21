@@ -13,29 +13,30 @@ type TerraformTemplate struct {
 	EntityTypeName           types.String                       `tfsdk:"entity_type"`
 	AnalyticsDbConfiguration *TerraformAnalyticsDbConfiguration `tfsdk:"analytics_db_configuration"`
 	ParentTemplateID         types.String                       `tfsdk:"parent_template_id"`
-	BuiltInAttributes        []TerraformBuiltinAttribute               `tfsdk:"builtin_attributes"`
-	CustomAttributes         []TerraformCustomAttribute               `tfsdk:"custom_attributes"`
+	BuiltInAttributes        []TerraformBuiltinAttribute        `tfsdk:"builtin_attributes"`
+	CustomAttributes         []TerraformCustomAttribute         `tfsdk:"custom_attributes"`
 	TemplateAttributes       []TerraformTemplateAttribute       `tfsdk:"template_attributes"`
 }
 
 type BaseTerraformAttribute struct {
-	Name                     types.String                       `tfsdk:"name"`
-	BasePath                 types.String                       `tfsdk:"base_path"`
-	ID                       types.String                       `tfsdk:"id"`
-	DisplayName              types.String                       `tfsdk:"display_name"`
-	Phi                      types.Bool                         `tfsdk:"phi"`
-	ReferenceConfiguration   *TerraformReferenceConfiguration   `tfsdk:"reference_configuration"`
-	LinkConfiguration        *TerraformLinkConfiguration        `tfsdk:"link_configuration"`
-	Validation               *TerraformValidation               `tfsdk:"validation"`
-	NumericMetaData          *TerraformNumericMetaData          `tfsdk:"numeric_meta_data"`
-	Type                     types.String                       `tfsdk:"type"`
-	Category                 types.String                       `tfsdk:"category"`
-	SelectableValues         []TerraformSelectableValue         `tfsdk:"selectable_values"`
+	Name                   types.String                     `tfsdk:"name"`
+	BasePath               types.String                     `tfsdk:"base_path"`
+	ID                     types.String                     `tfsdk:"id"`
+	DisplayName            types.String                     `tfsdk:"display_name"`
+	Phi                    types.Bool                       `tfsdk:"phi"`
+	ReferenceConfiguration *TerraformReferenceConfiguration `tfsdk:"reference_configuration"`
+	LinkConfiguration      *TerraformLinkConfiguration      `tfsdk:"link_configuration"`
+	Validation             *TerraformValidation             `tfsdk:"validation"`
+	NumericMetaData        *TerraformNumericMetaData        `tfsdk:"numeric_meta_data"`
+	Type                   types.String                     `tfsdk:"type"`
+	Category               types.String                     `tfsdk:"category"`
+	SelectableValues       []TerraformSelectableValue       `tfsdk:"selectable_values"`
 }
 
 type TerraformBuiltinAttribute struct {
 	BaseTerraformAttribute
 
+	PublicAccess             types.Bool                         `tfsdk:"public_access"`
 	AnalyticsDbConfiguration *TerraformAnalyticsDbConfiguration `tfsdk:"analytics_db_configuration"`
 }
 
@@ -77,12 +78,13 @@ type TerraformLinkConfiguration struct {
 }
 
 type TerraformValidation struct {
-	Mandatory    types.Bool   `tfsdk:"mandatory"`
-	DefaultValue types.String `tfsdk:"default_value"`
-	Min          types.Number `tfsdk:"min"`
-	Max          types.Number `tfsdk:"max"`
-	Regex        types.String `tfsdk:"regex"`
-	Unique       types.Bool   `tfsdk:"unique"`
+	Mandatory          types.Bool     `tfsdk:"mandatory"`
+	DefaultValue       types.String   `tfsdk:"default_value"`
+	Min                types.Number   `tfsdk:"min"`
+	Max                types.Number   `tfsdk:"max"`
+	Regex              types.String   `tfsdk:"regex"`
+	Unique             types.Bool     `tfsdk:"unique"`
+	SupportedMimeTypes []types.String `tfsdk:"supported_mime_types"`
 }
 
 type TerraformValidationMetadata struct {
@@ -93,8 +95,8 @@ type TerraformValidationMetadata struct {
 
 type TerraformNumericMetaData struct {
 	Units      types.String `tfsdk:"units"`
-	UpperRange types.Number  `tfsdk:"upper_range"`
-	LowerRange types.Number  `tfsdk:"lower_range"`
+	UpperRange types.Number `tfsdk:"upper_range"`
+	LowerRange types.Number `tfsdk:"lower_range"`
 	SubType    types.String `tfsdk:"sub_type"`
 }
 

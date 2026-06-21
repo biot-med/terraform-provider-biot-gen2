@@ -172,6 +172,10 @@ func attributeSchema() map[string]schema.Attribute {
 				"max":    schema.NumberAttribute{Optional: true},
 				"regex":  schema.StringAttribute{Optional: true},
 				"unique": schema.BoolAttribute{Optional: true},
+				"supported_mime_types": schema.ListAttribute{
+					ElementType: types.StringType,
+					Optional:    true,
+				},
 			},
 		},
 
@@ -212,6 +216,9 @@ func builtinAttributeSchema() map[string]schema.Attribute {
 			"name": schema.StringAttribute{Optional: true},
 		},
 	}
+
+	// System-managed: true for built-in FILE/IMAGE attributes published to the public bucket. Read-only.
+	attrSchema["public_access"] = schema.BoolAttribute{Computed: true}
 
 	return attrSchema
 }

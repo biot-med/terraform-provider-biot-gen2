@@ -100,6 +100,7 @@ type BaseAttributeResponse struct {
 
 type BuiltinAttributeResponse struct {
 	BaseAttributeResponse
+	PublicAccess             *bool                     `json:"publicAccess"`
 	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
 }
 
@@ -145,12 +146,13 @@ type LinkConfiguration struct {
 }
 
 type Validation struct {
-	Mandatory    *bool    `json:"mandatory"`
-	DefaultValue *string  `json:"defaultValue"`
-	Min          *float64 `json:"min"`
-	Max          *float64 `json:"max"`
-	Regex        *string  `json:"regex"`
-	Unique       *bool    `json:"unique,omitempty"`
+	Mandatory          *bool    `json:"mandatory"`
+	DefaultValue       *string  `json:"defaultValue"`
+	Min                *float64 `json:"min"`
+	Max                *float64 `json:"max"`
+	Regex              *string  `json:"regex"`
+	Unique             *bool    `json:"unique,omitempty"`
+	SupportedMimeTypes []string `json:"supportedMimeTypes,omitempty"`
 }
 
 type ErrorDetails struct {
