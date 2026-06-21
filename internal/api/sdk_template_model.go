@@ -70,7 +70,6 @@ type BaseAttribute struct {
 	ID                     string                  `json:"id"`
 	DisplayName            string                  `json:"displayName"`
 	Phi                    bool                    `json:"phi"`
-	PublicAccess           bool                    `json:"publicAccess"`
 	ReferenceConfiguration *ReferenceConfiguration `json:"referenceConfiguration"`
 	LinkConfiguration      *LinkConfiguration      `json:"linkConfiguration"`
 	Validation             *Validation             `json:"validation"`
@@ -102,6 +101,7 @@ type BaseAttributeResponse struct {
 
 type BuiltinAttributeResponse struct {
 	BaseAttributeResponse
+	PublicAccess             *bool                     `json:"publicAccess"`
 	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
 }
 

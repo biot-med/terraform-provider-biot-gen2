@@ -58,7 +58,6 @@ func mapBaseAttribute(ctx context.Context, attr BaseTerraformAttribute) api.Base
 		ID:                     attr.ID.ValueString(),
 		DisplayName:            attr.DisplayName.ValueString(),
 		Phi:                    attr.Phi.ValueBool(),
-		PublicAccess:           attr.PublicAccess.ValueBool(),
 		ReferenceConfiguration: mapReferenceConfiguration(attr.ReferenceConfiguration),
 		LinkConfiguration:      mapLinkConfiguration(attr.LinkConfiguration),
 		Validation:             mapValidation(attr.Validation),

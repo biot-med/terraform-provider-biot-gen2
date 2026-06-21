@@ -127,13 +127,12 @@ func attributeSchema() map[string]schema.Attribute {
 			Computed: true,
 			// Plan-modifier is implemeneted from the "parent" attribute.
 		},
-		"display_name":  schema.StringAttribute{Optional: true},
-		"phi":           schema.BoolAttribute{Optional: true},
-		"public_access": schema.BoolAttribute{Optional: true},
-		"name":          schema.StringAttribute{Required: true},
-		"type":          schema.StringAttribute{Required: true},
-		"category":      schema.StringAttribute{Optional: true},
-		"base_path":     schema.StringAttribute{Optional: true},
+		"display_name": schema.StringAttribute{Optional: true},
+		"phi":          schema.BoolAttribute{Optional: true},
+		"name":         schema.StringAttribute{Required: true},
+		"type":         schema.StringAttribute{Required: true},
+		"category":     schema.StringAttribute{Optional: true},
+		"base_path":    schema.StringAttribute{Optional: true},
 
 		"reference_configuration": schema.SingleNestedAttribute{
 			Optional: true,
@@ -237,6 +236,9 @@ func builtinAttributeSchema() map[string]schema.Attribute {
 			"name": schema.StringAttribute{Optional: true},
 		},
 	}
+
+	// System-managed: true for built-in FILE/IMAGE attributes published to the public bucket. Read-only.
+	attrSchema["public_access"] = schema.BoolAttribute{Computed: true}
 
 	return attrSchema
 }

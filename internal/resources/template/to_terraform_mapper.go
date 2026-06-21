@@ -51,6 +51,7 @@ func mapBuiltinAttributeResponseToTerraformAttribute(ctx context.Context, attr a
 
 	return TerraformBuiltinAttribute{
 		BaseTerraformAttribute:   base,
+		PublicAccess:             utils.BoolOrNullPtr(attr.PublicAccess),
 		AnalyticsDbConfiguration: mapToTerraformAnalyticsDbConfiguration(ctx, attr.AnalyticsDbConfiguration),
 	}
 }
@@ -71,7 +72,6 @@ func mapAttributeResponseToTerrformAttribute(ctx context.Context, attr api.BaseA
 		ID:                     types.StringValue(attr.ID),
 		DisplayName:            types.StringValue(attr.DisplayName),
 		Phi:                    types.BoolValue(attr.Phi),
-		PublicAccess:           types.BoolValue(attr.PublicAccess),
 		Type:                   types.StringValue(attr.Type),
 		Category:               mapToTerraformCategory(ctx, attr.Category),
 		SelectableValues:       mapToTerraformSelectableValues(ctx, attr.Type, attr.SelectableValues),

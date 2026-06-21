@@ -24,7 +24,6 @@ type BaseTerraformAttribute struct {
 	ID                     types.String                     `tfsdk:"id"`
 	DisplayName            types.String                     `tfsdk:"display_name"`
 	Phi                    types.Bool                       `tfsdk:"phi"`
-	PublicAccess           types.Bool                       `tfsdk:"public_access"`
 	ReferenceConfiguration *TerraformReferenceConfiguration `tfsdk:"reference_configuration"`
 	LinkConfiguration      *TerraformLinkConfiguration      `tfsdk:"link_configuration"`
 	Validation             *TerraformValidation             `tfsdk:"validation"`
@@ -38,6 +37,7 @@ type BaseTerraformAttribute struct {
 type TerraformBuiltinAttribute struct {
 	BaseTerraformAttribute
 
+	PublicAccess             types.Bool                         `tfsdk:"public_access"`
 	AnalyticsDbConfiguration *TerraformAnalyticsDbConfiguration `tfsdk:"analytics_db_configuration"`
 }
 
