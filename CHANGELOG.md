@@ -1,3 +1,8 @@
+## 1.0.8
+
+**Release date**: Jul 22, 2026
+- [SOFT-9778] Fixed Provider produced inconsistent result after apply error caused by the `validation.unique` attribute not being marked as `Computed`
+
 ## 1.0.7
 
 **Release date**: Jun 03, 2026
