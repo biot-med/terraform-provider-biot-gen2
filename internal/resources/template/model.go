@@ -28,6 +28,7 @@ type BaseTerraformAttribute struct {
 	LinkConfiguration      *TerraformLinkConfiguration      `tfsdk:"link_configuration"`
 	Validation             *TerraformValidation             `tfsdk:"validation"`
 	NumericMetaData        *TerraformNumericMetaData        `tfsdk:"numeric_meta_data"`
+	UiConfiguration        *TerraformUiConfiguration        `tfsdk:"ui_configuration"`
 	Type                   types.String                     `tfsdk:"type"`
 	Category               types.String                     `tfsdk:"category"`
 	SelectableValues       []TerraformSelectableValue       `tfsdk:"selectable_values"`
@@ -36,6 +37,7 @@ type BaseTerraformAttribute struct {
 type TerraformBuiltinAttribute struct {
 	BaseTerraformAttribute
 
+	PublicAccess             types.Bool                         `tfsdk:"public_access"`
 	AnalyticsDbConfiguration *TerraformAnalyticsDbConfiguration `tfsdk:"analytics_db_configuration"`
 }
 
@@ -77,12 +79,13 @@ type TerraformLinkConfiguration struct {
 }
 
 type TerraformValidation struct {
-	Mandatory    types.Bool   `tfsdk:"mandatory"`
-	DefaultValue types.String `tfsdk:"default_value"`
-	Min          types.Number `tfsdk:"min"`
-	Max          types.Number `tfsdk:"max"`
-	Regex        types.String `tfsdk:"regex"`
-	Unique       types.Bool   `tfsdk:"unique"`
+	Mandatory          types.Bool     `tfsdk:"mandatory"`
+	DefaultValue       types.String   `tfsdk:"default_value"`
+	Min                types.Number   `tfsdk:"min"`
+	Max                types.Number   `tfsdk:"max"`
+	Regex              types.String   `tfsdk:"regex"`
+	Unique             types.Bool     `tfsdk:"unique"`
+	SupportedMimeTypes []types.String `tfsdk:"supported_mime_types"`
 }
 
 type TerraformValidationMetadata struct {
@@ -96,6 +99,20 @@ type TerraformNumericMetaData struct {
 	UpperRange types.Number `tfsdk:"upper_range"`
 	LowerRange types.Number `tfsdk:"lower_range"`
 	SubType    types.String `tfsdk:"sub_type"`
+}
+
+type TerraformUiConfiguration struct {
+	Date     *TerraformDateUiConfiguration     `tfsdk:"date"`
+	DateTime *TerraformDateTimeUiConfiguration `tfsdk:"date_time"`
+}
+
+type TerraformDateUiConfiguration struct {
+	DateStyle types.String `tfsdk:"date_style"`
+}
+
+type TerraformDateTimeUiConfiguration struct {
+	DateStyle types.String `tfsdk:"date_style"`
+	TimeStyle types.String `tfsdk:"time_style"`
 }
 
 type TerraformSelectableValue struct {

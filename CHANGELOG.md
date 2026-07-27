@@ -1,3 +1,15 @@
+## 1.0.10
+
+**Release date**: Jun 21, 2026
+- [SOFT-9713] Added `ui_configuration` to template attributes for configuring date/date-time display style
+
+## 1.0.9
+
+**Release date**: Jun 04, 2026
+- [SOFT-9662] added branding category to organization template
+    - Support supported mime types in validation
+    - Support `public_access` - a read-only field on built-in attributes only.
+
 ## 1.0.8
 
 **Release date**: Jul 22, 2026

@@ -74,6 +74,7 @@ type BaseAttribute struct {
 	LinkConfiguration      *LinkConfiguration      `json:"linkConfiguration"`
 	Validation             *Validation             `json:"validation"`
 	NumericMetaData        *NumericMetaData        `json:"numericMetaData"`
+	UiConfiguration        *UiConfiguration        `json:"uiConfiguration,omitempty"`
 	Type                   string                  `json:"type"`
 	SelectableValues       []SelectableValue       `json:"selectableValues"`
 	ValidationMetadata     *ValidationMetadata     `json:"validationMetadata,omitempty"`
@@ -100,6 +101,7 @@ type BaseAttributeResponse struct {
 
 type BuiltinAttributeResponse struct {
 	BaseAttributeResponse
+	PublicAccess             *bool                     `json:"publicAccess"`
 	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
 }
 
@@ -145,12 +147,13 @@ type LinkConfiguration struct {
 }
 
 type Validation struct {
-	Mandatory    *bool    `json:"mandatory"`
-	DefaultValue *string  `json:"defaultValue"`
-	Min          *float64 `json:"min"`
-	Max          *float64 `json:"max"`
-	Regex        *string  `json:"regex"`
-	Unique       *bool    `json:"unique,omitempty"`
+	Mandatory          *bool    `json:"mandatory"`
+	DefaultValue       *string  `json:"defaultValue"`
+	Min                *float64 `json:"min"`
+	Max                *float64 `json:"max"`
+	Regex              *string  `json:"regex"`
+	Unique             *bool    `json:"unique,omitempty"`
+	SupportedMimeTypes []string `json:"supportedMimeTypes,omitempty"`
 }
 
 type ErrorDetails struct {
@@ -182,6 +185,20 @@ type NumericMetaData struct {
 	UpperRange *float64 `json:"upperRange"`
 	LowerRange *float64 `json:"lowerRange"`
 	SubType    *string  `json:"subType"`
+}
+
+type UiConfiguration struct {
+	Date     *DateUiConfiguration     `json:"date,omitempty"`
+	DateTime *DateTimeUiConfiguration `json:"dateTime,omitempty"`
+}
+
+type DateUiConfiguration struct {
+	DateStyle *string `json:"dateStyle,omitempty"`
+}
+
+type DateTimeUiConfiguration struct {
+	DateStyle *string `json:"dateStyle,omitempty"`
+	TimeStyle *string `json:"timeStyle,omitempty"`
 }
 
 type Category struct {

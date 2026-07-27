@@ -177,6 +177,10 @@ func attributeSchema() map[string]schema.Attribute {
 					Computed: true,
 					Default:  booldefault.StaticBool(false),
 				},
+				"supported_mime_types": schema.ListAttribute{
+					ElementType: types.StringType,
+					Optional:    true,
+				},
 			},
 		},
 
@@ -187,6 +191,26 @@ func attributeSchema() map[string]schema.Attribute {
 				"upper_range": schema.NumberAttribute{Optional: true},
 				"lower_range": schema.NumberAttribute{Optional: true},
 				"sub_type":    schema.StringAttribute{Optional: true},
+			},
+		},
+
+		"ui_configuration": schema.SingleNestedAttribute{
+			Optional:    true,
+			Description: "Display configuration for the attribute value. 'date' applies to DATE attributes, 'date_time' to DATE_TIME attributes. Styles are verbosity levels (SHORT, MEDIUM, LONG, FULL); the exact rendering is locale-dependent.",
+			Attributes: map[string]schema.Attribute{
+				"date": schema.SingleNestedAttribute{
+					Optional: true,
+					Attributes: map[string]schema.Attribute{
+						"date_style": schema.StringAttribute{Optional: true},
+					},
+				},
+				"date_time": schema.SingleNestedAttribute{
+					Optional: true,
+					Attributes: map[string]schema.Attribute{
+						"date_style": schema.StringAttribute{Optional: true},
+						"time_style": schema.StringAttribute{Optional: true},
+					},
+				},
 			},
 		},
 
@@ -217,6 +241,9 @@ func builtinAttributeSchema() map[string]schema.Attribute {
 			"name": schema.StringAttribute{Optional: true},
 		},
 	}
+
+	// System-managed: true for built-in FILE/IMAGE attributes published to the public bucket. Read-only.
+	attrSchema["public_access"] = schema.BoolAttribute{Computed: true}
 
 	return attrSchema
 }

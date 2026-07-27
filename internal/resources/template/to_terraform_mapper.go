@@ -51,6 +51,7 @@ func mapBuiltinAttributeResponseToTerraformAttribute(ctx context.Context, attr a
 
 	return TerraformBuiltinAttribute{
 		BaseTerraformAttribute:   base,
+		PublicAccess:             utils.BoolOrNullPtr(attr.PublicAccess),
 		AnalyticsDbConfiguration: mapToTerraformAnalyticsDbConfiguration(ctx, attr.AnalyticsDbConfiguration),
 	}
 }
@@ -78,6 +79,7 @@ func mapAttributeResponseToTerrformAttribute(ctx context.Context, attr api.BaseA
 		LinkConfiguration:      mapToTerraformLinkConfiguration(ctx, attr.LinkConfiguration),
 		Validation:             mapToTerraformValidation(ctx, attr.Validation),
 		NumericMetaData:        mapToTerraformNumericMetaData(ctx, attr.NumericMetaData),
+		UiConfiguration:        mapToTerraformUiConfiguration(ctx, attr.UiConfiguration),
 	}
 }
 
@@ -160,7 +162,7 @@ func mapToTerraformValidation(ctx context.Context, validation *api.Validation) *
 		return nil
 	}
 
-	return &TerraformValidation{
+	result := &TerraformValidation{
 		Mandatory:    utils.BoolOrNullPtr(validation.Mandatory),
 		DefaultValue: utils.StringOrNullPtr(validation.DefaultValue),
 		Min:          utils.Float64OrNullPtr(validation.Min),
@@ -168,6 +170,12 @@ func mapToTerraformValidation(ctx context.Context, validation *api.Validation) *
 		Regex:        utils.StringOrNullPtr(validation.Regex),
 		Unique:       utils.BoolOrNullPtr(validation.Unique),
 	}
+
+	if len(validation.SupportedMimeTypes) > 0 {
+		result.SupportedMimeTypes = utils.ConvertStringList(validation.SupportedMimeTypes)
+	}
+
+	return result
 }
 
 func mapToTerraformNumericMetaData(ctx context.Context, numericMetaData *api.NumericMetaData) *TerraformNumericMetaData {
@@ -181,6 +189,29 @@ func mapToTerraformNumericMetaData(ctx context.Context, numericMetaData *api.Num
 		LowerRange: utils.Float64OrNullPtr(numericMetaData.LowerRange),
 		SubType:    utils.StringOrNullPtr(numericMetaData.SubType),
 	}
+}
+
+func mapToTerraformUiConfiguration(ctx context.Context, uiConfiguration *api.UiConfiguration) *TerraformUiConfiguration {
+	if uiConfiguration == nil {
+		return nil
+	}
+
+	result := &TerraformUiConfiguration{}
+
+	if uiConfiguration.Date != nil {
+		result.Date = &TerraformDateUiConfiguration{
+			DateStyle: utils.StringOrNullPtr(uiConfiguration.Date.DateStyle),
+		}
+	}
+
+	if uiConfiguration.DateTime != nil {
+		result.DateTime = &TerraformDateTimeUiConfiguration{
+			DateStyle: utils.StringOrNullPtr(uiConfiguration.DateTime.DateStyle),
+			TimeStyle: utils.StringOrNullPtr(uiConfiguration.DateTime.TimeStyle),
+		}
+	}
+
+	return result
 }
 
 func mapToTerraformParentTemplateID(ctx context.Context, parentTemplate *api.ParentTemplate) types.String {
