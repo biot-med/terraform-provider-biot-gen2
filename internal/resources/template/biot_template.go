@@ -11,7 +11,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -172,10 +171,13 @@ func attributeSchema() map[string]schema.Attribute {
 				"min":   schema.NumberAttribute{Optional: true},
 				"max":   schema.NumberAttribute{Optional: true},
 				"regex": schema.StringAttribute{Optional: true},
+				// No Default here: this attribute lives inside a SetNestedAttribute, where a
+				// schema default can overwrite a value the practitioner explicitly set
+				// (SOFT-9875). Computed alone is enough - the server already defaults
+				// unique to false when the field is omitted from the request.
 				"unique": schema.BoolAttribute{
 					Optional: true,
 					Computed: true,
-					Default:  booldefault.StaticBool(false),
 				},
 				"supported_mime_types": schema.ListAttribute{
 					ElementType: types.StringType,
