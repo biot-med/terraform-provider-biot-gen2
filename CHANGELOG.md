@@ -1,3 +1,8 @@
+## 1.0.11
+
+**Release date**: Sep 14, 2026
+- [SOFT-9875] Fixed `validation.unique` being planned as `false` even when set to `true` in the configuration, caused by the schema default overwriting configured values inside the attribute sets
+
 ## 1.0.10
 
 **Release date**: Jun 21, 2026
