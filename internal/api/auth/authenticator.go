@@ -1,4 +1,4 @@
-package api
+package auth
 
 import (
 	"context"
@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
+
+	"biot.com/terraform-provider-biot-gen2/internal/api/transport"
 )
 
 // tokenCache represents the structure of the cached token file
@@ -17,9 +19,9 @@ type tokenCache struct {
 	Expiration time.Time `json:"expiration"`
 }
 
-// AuthenticatorService handles authentication and token management
-type AuthenticatorService struct {
-	biotSdk          BiotSdk
+// Authenticator handles authentication and token management.
+type Authenticator struct {
+	client           *transport.Client
 	serviceId        string
 	serviceSecretKey string
 
@@ -30,10 +32,11 @@ type AuthenticatorService struct {
 	cacheFilePath   string
 }
 
-// NewAuthenticatorService creates a new authenticator service
-func NewAuthenticatorService(biotSdk BiotSdk, serviceId string, serviceSecretKey string) *AuthenticatorService {
-	auth := &AuthenticatorService{
-		biotSdk:          biotSdk,
+// New creates an authenticator. The client must be unauthenticated - it is what the login
+// call itself goes out on.
+func New(client *transport.Client, serviceId string, serviceSecretKey string) *Authenticator {
+	auth := &Authenticator{
+		client:           client,
 		serviceId:        serviceId,
 		serviceSecretKey: serviceSecretKey,
 	}
@@ -48,7 +51,7 @@ func NewAuthenticatorService(biotSdk BiotSdk, serviceId string, serviceSecretKey
 }
 
 // getCacheFilePath returns the path to the cache file for this service
-func (auth *AuthenticatorService) getCacheFilePath() string {
+func (auth *Authenticator) getCacheFilePath() string {
 	// Create a hash of the service ID to use as filename (for security)
 	hash := sha256.Sum256([]byte(auth.serviceId))
 	hashStr := fmt.Sprintf("%x", hash)[:16] // Use first 16 chars
@@ -67,7 +70,7 @@ func (auth *AuthenticatorService) getCacheFilePath() string {
 }
 
 // loadCachedToken loads a cached token from disk if it exists and is still valid
-func (auth *AuthenticatorService) loadCachedToken() {
+func (auth *Authenticator) loadCachedToken() {
 	auth.tokenMutex.Lock()
 	defer auth.tokenMutex.Unlock()
 
@@ -91,7 +94,7 @@ func (auth *AuthenticatorService) loadCachedToken() {
 }
 
 // saveCachedToken saves the token to disk
-func (auth *AuthenticatorService) saveCachedToken(token string, expiration time.Time) error {
+func (auth *Authenticator) saveCachedToken(token string, expiration time.Time) error {
 	cache := tokenCache{
 		Token:      token,
 		Expiration: expiration,
@@ -125,8 +128,9 @@ func (auth *AuthenticatorService) saveCachedToken(token string, expiration time.
 	return nil
 }
 
-// GetAccessToken retrieves an access token from the Biot service, reusing cached token if still valid
-func (auth *AuthenticatorService) GetAccessToken(ctx context.Context) (string, error) {
+// AccessToken retrieves an access token from the Biot service, reusing the cached token if
+// it is still valid. It implements transport.TokenSource.
+func (auth *Authenticator) AccessToken(ctx context.Context) (string, error) {
 	// Check if we have a valid cached token
 	auth.tokenMutex.RLock()
 	if auth.cachedToken != "" && time.Now().Before(auth.tokenExpiration) {
@@ -146,7 +150,7 @@ func (auth *AuthenticatorService) GetAccessToken(ctx context.Context) (string, e
 	}
 
 	// Fetch new token
-	response, err := auth.biotSdk.LoginAsService(ctx, auth.serviceId, auth.serviceSecretKey)
+	response, err := Login(ctx, auth.client, auth.serviceId, auth.serviceSecretKey)
 	if err != nil {
 		return "", fmt.Errorf("failed to login as service using service ID [%s]: %w", auth.serviceId, err)
 	}

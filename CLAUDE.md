@@ -21,7 +21,7 @@ Local install for manual Terraform testing:
 
 ## Architecture
 
-This is a **Terraform Plugin Framework** provider for managing BioT templates. It exposes a single resource (`biot_template`) and connects to a BioT backend via a custom HTTP SDK.
+This is a **Terraform Plugin Framework** provider for managing BioT configuration. It exposes `biot_template` and `biot_abac_condition` (with ABAC actions and rules to follow), and connects to a BioT backend via a custom HTTP client.
 
 ### Provider (`internal/provider/provider.go`)
 Configures credentials (`base_url`, `service_id`, `service_secret_key`), validates server version compatibility, and registers resources/data sources.
@@ -34,11 +34,23 @@ All CRUD logic lives in `biot_template.go`. The schema is defined via nested hel
 The model types live in `model.go` and are prefixed with `Terraform` (e.g. `TerraformTemplate`, `TerraformBuiltinAttribute`) to distinguish them from API types.
 
 ### API Client (`internal/api/`)
-- `biotSdk.go` — raw HTTP calls to the BioT backend
-- `api_client.go` — higher-level CRUD wrapper used by the resource
-- `authenticator.go` — token management with disk-based caching and `sync.RWMutex` for concurrency
+One package per BioT domain, over shared plumbing. Resources receive `*api.APIClient` and reach a domain through its field: `client.Template.Get(...)`, `client.Abac.CreateCondition(...)`.
+- `client.go` — `api.New(...)` wires everything together; `APIClient` holds `Template`, `Abac`, `Versions`
+- `transport/` — domain-agnostic HTTP: `transport.Do[T]` / `DoNoContent` / `DoUnauthenticated[T]`, BioT's `APIError` envelope. Attaches the bearer token itself, so API methods never handle tokens.
+  - A 404 returns `ErrNotFound` **wrapping** the parsed `APIError`, so check drift with `transport.IsNotFound(err)` and still recover the code with `transport.AsAPIError(err)`. This matters because access-control uses 404 for both "missing" and "you referenced something missing".
+  - `APIError.Details` is raw JSON because its shape differs per service; decode it with `apiError.DecodeDetails(&domainpkg.ErrorDetails{})`.
+- `auth/` — service login and token management, with disk-based caching and `sync.RWMutex` for concurrency. Implements `transport.TokenSource`.
+- `template/` — settings-service template client and models
+  - `validation_json.go` — custom `UnmarshalJSON`/`MarshalJSON` for `Validation`, needed to handle `defaultValue` as any JSON type. **When adding a new field to the `Validation` struct, you must also add it to both `validationAlias` structs inside this file**, otherwise the field will silently unmarshal as nil.
+- `abac/` — access-control client and models. Import it as `abacapi`, since `internal/resources/abac` is also named `abac`.
 - `version_validator.go` — enforces minimum compatible server version at provider init
-- `validation_json.go` — custom `UnmarshalJSON`/`MarshalJSON` for `Validation`, needed to handle `defaultValue` as any JSON type. **When adding a new field to the `Validation` struct, you must also add it to both `validationAlias` structs inside this file**, otherwise the field will silently unmarshal as nil.
+
+To add a new domain: create `internal/api/<domain>/` with a `Client` over `*transport.Client`, then add a field to `APIClient` in `client.go`.
+
+### ABAC resources (`internal/resources/abac/`)
+Each access-control resource has its own subpackage (`condition/`, and `action/` and `rule/` to come), each exporting `NewResource` and an `Entity`. The parent `abac` package holds only what they share:
+- `errors.go` — `abac.AddError` maps service error codes to actionable diagnostics. Each resource declares its codes on its `Entity`, because the service names them inconsistently (`CONDITIONS_NOT_FOUND` vs `RULE_NOT_FOUND`). Leave a code empty if the entity has no such error.
+- `tags.go` — the service re-adds `<<BuiltIn>>` on every update of a built-in object, so it is stripped from `tags` and surfaced as a read-only `built_in` attribute. Call `abac.RejectBuiltInTag` from `ValidateConfig`. Tags are otherwise sent exactly as configured.
 
 ### Custom Plan Modifiers (`internal/resources/biot_plan_modifiers/`)
 - `CopyIDFromStateByNameSetModifier` — preserves computed IDs across plan cycles by matching on `name`

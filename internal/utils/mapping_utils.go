@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"math/big"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -131,4 +132,69 @@ func ConvertTerraformStringList(in []types.String) []string {
 		}
 	}
 	return out
+}
+
+// set and JSON helpers
+
+// StringSliceToSet converts a native string slice into a Terraform set.
+//
+// A nil slice becomes an empty set rather than a null one. The access-control service omits
+// empty collections from its responses entirely (@JsonInclude(NON_NULL)), so a missing
+// "tags" key means "no tags", not "unknown" - and mapping it to null would not match a
+// configured value of [].
+func StringSliceToSet(ctx context.Context, in []string) (types.Set, diag.Diagnostics) {
+	if in == nil {
+		in = []string{}
+	}
+
+	return types.SetValueFrom(ctx, types.StringType, in)
+}
+
+// SetToStringSlice converts a Terraform set into a native string slice.
+//
+// It never returns nil. A nil slice marshals to JSON null, and the access-control service
+// treats a null field as "leave unchanged" rather than "clear", which would make an empty
+// tag set impossible to express.
+func SetToStringSlice(ctx context.Context, set types.Set) ([]string, diag.Diagnostics) {
+	out := []string{}
+	if set.IsNull() || set.IsUnknown() {
+		return out, nil
+	}
+
+	diags := set.ElementsAs(ctx, &out, false)
+	if diags.HasError() {
+		return []string{}, diags
+	}
+
+	return out, diags
+}
+
+// JsonStringToMap parses a JSON object string into a map. A null, unknown or empty string
+// yields an empty map, never nil, for the same reason as SetToStringSlice.
+func JsonStringToMap(s types.String) (map[string]interface{}, error) {
+	out := map[string]interface{}{}
+	if s.IsNull() || s.IsUnknown() || s.ValueString() == "" {
+		return out, nil
+	}
+
+	if err := json.Unmarshal([]byte(s.ValueString()), &out); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+// MapToJsonString renders a map as a compact JSON object string. A nil map becomes "{}" so
+// that it matches a schema default of "{}" instead of drifting to null.
+func MapToJsonString(m map[string]interface{}) (types.String, error) {
+	if m == nil {
+		m = map[string]interface{}{}
+	}
+
+	bytes, err := json.Marshal(m)
+	if err != nil {
+		return types.StringNull(), err
+	}
+
+	return types.StringValue(string(bytes)), nil
 }

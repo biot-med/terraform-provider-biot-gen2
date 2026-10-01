@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"biot.com/terraform-provider-biot-gen2/internal/api"
+	"biot.com/terraform-provider-biot-gen2/internal/resources/abac/condition"
 	"biot.com/terraform-provider-biot-gen2/internal/resources/template"
 	"biot.com/terraform-provider-biot-gen2/internal/version"
 )
@@ -109,15 +110,10 @@ func (p *BiotProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 		return
 	}
 
-	biotSdk := api.NewBiotSdkImpl(config.BaseURL)
-	authenticator := api.NewAuthenticatorService(biotSdk, config.ServiceID, config.ServiceSecretKey)
-
-	client := api.NewAPIClient(biotSdk, authenticator)
+	client := api.New(config.BaseURL, config.ServiceID, config.ServiceSecretKey)
 
 	// Validate versions
-	versionValidator := api.NewVersionValidator(biotSdk, authenticator)
-
-	if err := versionValidator.Validate(ctx, p.version, version.MinimumBiotVersion); err != nil {
+	if err := client.Versions.Validate(ctx, p.version, version.MinimumBiotVersion); err != nil {
 		switch e := err.(type) {
 		case api.ValidationUnsupportedError:
 			// 200 OK but status == UNSUPPORTED
@@ -144,6 +140,7 @@ func (p *BiotProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 func (p *BiotProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		template.NewResource,
+		condition.NewResource,
 	}
 }
 

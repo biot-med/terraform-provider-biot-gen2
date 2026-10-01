@@ -4,22 +4,23 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"biot.com/terraform-provider-biot-gen2/internal/api/transport"
 )
 
-// VersionValidator handles version validation for the Terraform provider
+// VersionValidator checks that this provider is compatible with the BioT deployment. The
+// endpoint lives on the settings service but the concern is provider-wide, so it sits here
+// rather than in the template package.
 type VersionValidator struct {
-	biotSdk       BiotSdk
-	authenticator *AuthenticatorService
+	http *transport.Client
 }
 
-// NewVersionValidator creates a new version validator
-func NewVersionValidator(biotSdk BiotSdk, authenticator *AuthenticatorService) *VersionValidator {
-	return &VersionValidator{
-		biotSdk:       biotSdk,
-		authenticator: authenticator,
-	}
+func newVersionValidator(httpClient *transport.Client) *VersionValidator {
+	return &VersionValidator{http: httpClient}
 }
 
 // ValidationUnsupportedError is returned when the API returned 200 OK but status==UNSUPPORTED
@@ -44,14 +45,13 @@ func (e ValidationAPIError) Unwrap() error { return e.Err }
 
 // ValidateVersions validates that the provider version is compatible with the Biot version
 func (v *VersionValidator) ValidateVersions(ctx context.Context, providerVersion string, minimumBiotVersion string) (*TerraformVersionValidationResponse, error) {
-	// Get access token
-	token, err := v.authenticator.GetAccessToken(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get access token for version validation: %w", err)
-	}
+	params := url.Values{}
+	params.Add("terraform-provider", providerVersion)
+	params.Add("minimum-biot", minimumBiotVersion)
 
-	// Call the version validation endpoint
-	response, err := v.biotSdk.ValidateVersions(ctx, token, providerVersion, minimumBiotVersion)
+	requestURL := fmt.Sprintf("%s/settings/v1/terraform/versions/validate?%s", v.http.BaseURL, params.Encode())
+
+	response, err := transport.Do[TerraformVersionValidationResponse](ctx, v.http, http.MethodGet, requestURL, nil)
 	if err != nil {
 		return nil, err
 	}

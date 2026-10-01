@@ -3,13 +3,13 @@ package template
 import (
 	"context"
 
-	"biot.com/terraform-provider-biot-gen2/internal/api"
+	templateapi "biot.com/terraform-provider-biot-gen2/internal/api/template"
 	"biot.com/terraform-provider-biot-gen2/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-func mapTemplateResponseToTerrformModel(ctx context.Context, resp api.TemplateResponse) TerraformTemplate {
+func mapTemplateResponseToTerrformModel(ctx context.Context, resp templateapi.TemplateResponse) TerraformTemplate {
 	builtInAttrs := []TerraformBuiltinAttribute{}
 
 	for _, attr := range resp.BuiltInAttributes {
@@ -46,7 +46,7 @@ func mapTemplateResponseToTerrformModel(ctx context.Context, resp api.TemplateRe
 	return template
 }
 
-func mapBuiltinAttributeResponseToTerraformAttribute(ctx context.Context, attr api.BuiltinAttributeResponse) TerraformBuiltinAttribute {
+func mapBuiltinAttributeResponseToTerraformAttribute(ctx context.Context, attr templateapi.BuiltinAttributeResponse) TerraformBuiltinAttribute {
 	base := mapAttributeResponseToTerrformAttribute(ctx, attr.BaseAttributeResponse)
 
 	return TerraformBuiltinAttribute{
@@ -56,7 +56,7 @@ func mapBuiltinAttributeResponseToTerraformAttribute(ctx context.Context, attr a
 	}
 }
 
-func mapCustomAttributeResponseToTerraformAttribute(ctx context.Context, attr api.CustomAttributeResponse) TerraformCustomAttribute {
+func mapCustomAttributeResponseToTerraformAttribute(ctx context.Context, attr templateapi.CustomAttributeResponse) TerraformCustomAttribute {
 	base := mapAttributeResponseToTerrformAttribute(ctx, attr.BaseAttributeResponse)
 
 	return TerraformCustomAttribute{
@@ -65,7 +65,7 @@ func mapCustomAttributeResponseToTerraformAttribute(ctx context.Context, attr ap
 	}
 }
 
-func mapAttributeResponseToTerrformAttribute(ctx context.Context, attr api.BaseAttributeResponse) BaseTerraformAttribute {
+func mapAttributeResponseToTerrformAttribute(ctx context.Context, attr templateapi.BaseAttributeResponse) BaseTerraformAttribute {
 	return BaseTerraformAttribute{
 		Name:                   types.StringValue(attr.Name),
 		BasePath:               utils.StringOrNullPtr(attr.BasePath),
@@ -83,7 +83,7 @@ func mapAttributeResponseToTerrformAttribute(ctx context.Context, attr api.BaseA
 	}
 }
 
-func mapTemplateAttributeResponseToTerrformAttribute(ctx context.Context, attr api.TemplateAttributeResponse) TerraformTemplateAttribute {
+func mapTemplateAttributeResponseToTerrformAttribute(ctx context.Context, attr templateapi.TemplateAttributeResponse) TerraformTemplateAttribute {
 	base := mapAttributeResponseToTerrformAttribute(ctx, attr.BaseAttributeResponse)
 
 	return TerraformTemplateAttribute{
@@ -93,7 +93,7 @@ func mapTemplateAttributeResponseToTerrformAttribute(ctx context.Context, attr a
 	}
 }
 
-func mapToTerraformAnalyticsDbConfiguration(ctx context.Context, adbConfiguration *api.AnalyticsDbConfiguration) *TerraformAnalyticsDbConfiguration {
+func mapToTerraformAnalyticsDbConfiguration(ctx context.Context, adbConfiguration *templateapi.AnalyticsDbConfiguration) *TerraformAnalyticsDbConfiguration {
 	if adbConfiguration == nil {
 		return nil
 	}
@@ -103,7 +103,7 @@ func mapToTerraformAnalyticsDbConfiguration(ctx context.Context, adbConfiguratio
 	}
 }
 
-func mapToTerraformCategory(ctx context.Context, category *api.Category) basetypes.StringValue {
+func mapToTerraformCategory(ctx context.Context, category *templateapi.Category) basetypes.StringValue {
 	if category == nil {
 		return types.StringNull()
 	}
@@ -111,7 +111,7 @@ func mapToTerraformCategory(ctx context.Context, category *api.Category) basetyp
 	return types.StringValue(category.Name)
 }
 
-func mapToTerraformSelectableValues(ctx context.Context, attributeType string, selectableValues []api.SelectableValue) []TerraformSelectableValue {
+func mapToTerraformSelectableValues(ctx context.Context, attributeType string, selectableValues []templateapi.SelectableValue) []TerraformSelectableValue {
 	// It is important that we do NOT return nil here, otherwise terraform will detect changes where there are none.
 	result := []TerraformSelectableValue{}
 
@@ -131,7 +131,7 @@ func mapToTerraformSelectableValues(ctx context.Context, attributeType string, s
 	return result
 }
 
-func mapToTerraformReferenceConfiguration(ctx context.Context, referenceConfiguration *api.ReferenceConfiguration) *TerraformReferenceConfiguration {
+func mapToTerraformReferenceConfiguration(ctx context.Context, referenceConfiguration *templateapi.ReferenceConfiguration) *TerraformReferenceConfiguration {
 	if referenceConfiguration == nil {
 		return nil
 	}
@@ -145,7 +145,7 @@ func mapToTerraformReferenceConfiguration(ctx context.Context, referenceConfigur
 	}
 }
 
-func mapToTerraformLinkConfiguration(ctx context.Context, linkConfiguration *api.LinkConfiguration) *TerraformLinkConfiguration {
+func mapToTerraformLinkConfiguration(ctx context.Context, linkConfiguration *templateapi.LinkConfiguration) *TerraformLinkConfiguration {
 	if linkConfiguration == nil {
 		return nil
 	}
@@ -157,7 +157,7 @@ func mapToTerraformLinkConfiguration(ctx context.Context, linkConfiguration *api
 	}
 }
 
-func mapToTerraformValidation(ctx context.Context, validation *api.Validation) *TerraformValidation {
+func mapToTerraformValidation(ctx context.Context, validation *templateapi.Validation) *TerraformValidation {
 	if validation == nil {
 		return nil
 	}
@@ -178,7 +178,7 @@ func mapToTerraformValidation(ctx context.Context, validation *api.Validation) *
 	return result
 }
 
-func mapToTerraformNumericMetaData(ctx context.Context, numericMetaData *api.NumericMetaData) *TerraformNumericMetaData {
+func mapToTerraformNumericMetaData(ctx context.Context, numericMetaData *templateapi.NumericMetaData) *TerraformNumericMetaData {
 	if numericMetaData == nil {
 		return nil
 	}
@@ -191,7 +191,7 @@ func mapToTerraformNumericMetaData(ctx context.Context, numericMetaData *api.Num
 	}
 }
 
-func mapToTerraformUiConfiguration(ctx context.Context, uiConfiguration *api.UiConfiguration) *TerraformUiConfiguration {
+func mapToTerraformUiConfiguration(ctx context.Context, uiConfiguration *templateapi.UiConfiguration) *TerraformUiConfiguration {
 	if uiConfiguration == nil {
 		return nil
 	}
@@ -214,14 +214,14 @@ func mapToTerraformUiConfiguration(ctx context.Context, uiConfiguration *api.UiC
 	return result
 }
 
-func mapToTerraformParentTemplateID(ctx context.Context, parentTemplate *api.ParentTemplate) types.String {
+func mapToTerraformParentTemplateID(ctx context.Context, parentTemplate *templateapi.ParentTemplate) types.String {
 	if parentTemplate == nil {
 		return types.StringNull()
 	}
 	return types.StringValue(parentTemplate.ID)
 }
 
-func mapToTerraformOrganizationSelection(ctx context.Context, organizationSelection *api.OrganizationSelection) *TerraformOrganizationSelection {
+func mapToTerraformOrganizationSelection(ctx context.Context, organizationSelection *templateapi.OrganizationSelection) *TerraformOrganizationSelection {
 	if organizationSelection == nil || organizationSelection.Configuration == nil {
 		return nil
 	}
@@ -232,7 +232,7 @@ func mapToTerraformOrganizationSelection(ctx context.Context, organizationSelect
 	}
 }
 
-func mapToTerraformIDWrappers(ctx context.Context, apiWrappers []api.IDWrapper) []TerraformIDWrapper {
+func mapToTerraformIDWrappers(ctx context.Context, apiWrappers []templateapi.IDWrapper) []TerraformIDWrapper {
 	var result []TerraformIDWrapper
 
 	for _, idWrapper := range apiWrappers {

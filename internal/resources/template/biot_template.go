@@ -2,7 +2,6 @@ package template
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"maps"
 	"os"
@@ -17,6 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"biot.com/terraform-provider-biot-gen2/internal/api"
+	templateapi "biot.com/terraform-provider-biot-gen2/internal/api/template"
+	"biot.com/terraform-provider-biot-gen2/internal/api/transport"
 	biotplanmodifiers "biot.com/terraform-provider-biot-gen2/internal/resources/biot_plan_modifiers"
 )
 
@@ -314,9 +315,9 @@ func (r *BiotTemplateResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	client := r.client
-	getTemplateResponse, err := client.GetTemplate(ctx, state.ID.ValueString())
+	getTemplateResponse, err := client.Template.Get(ctx, state.ID.ValueString())
 	if err != nil {
-		if errors.Is(err, api.SpecificErrorCodes.NotFound) {
+		if transport.IsNotFound(err) {
 			// The template is not exist in the backend, removing it from local state.
 			resp.State.RemoveResource(ctx)
 			return
@@ -342,7 +343,7 @@ func (r *BiotTemplateResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	createRequest := MapTerraformTemplateToCreateRequest(ctx, plan)
-	response, err := r.client.CreateTemplate(ctx, createRequest)
+	response, err := r.client.Template.Create(ctx, createRequest)
 
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Failed to create template: %s", err))
@@ -381,10 +382,10 @@ func (r *BiotTemplateResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	updateRequest := MapTerraformTemplateToUpdateRequest(ctx, plan)
-	response, err := r.client.UpdateTemplate(ctx, state.ID.ValueString(), updateRequest, forceUpdate)
+	response, err := r.client.Template.Update(ctx, state.ID.ValueString(), updateRequest, forceUpdate)
 
 	if err != nil {
-		if apiError, ok := api.ConvertAPIError(err); ok && apiError.Code == "CUSTOM_ATTRIBUTE_IN_USE" {
+		if apiError, ok := transport.AsAPIError(err); ok && apiError.Code == "CUSTOM_ATTRIBUTE_IN_USE" {
 			formatCustomAttributeInUseError(apiError, resp)
 		} else {
 			resp.Diagnostics.AddError("API Error", fmt.Sprintf("Failed to update template: %s", err))
@@ -402,16 +403,23 @@ func (r *BiotTemplateResource) Delete(ctx context.Context, req resource.DeleteRe
 	req.State.Get(ctx, &state)
 
 	client := r.client
-	err := client.DeleteTemplate(ctx, state.ID.ValueString())
+	err := client.Template.Delete(ctx, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Failed to delete template: %s", err))
 	}
 }
 
-func formatCustomAttributeInUseError(apiError api.APIError, resp *resource.UpdateResponse) {
-	// Extract attribute names from the details
+func formatCustomAttributeInUseError(apiError transport.APIError, resp *resource.UpdateResponse) {
+	// The error envelope is shared across BioT services, so the service-specific details are
+	// carried raw and decoded here into the settings-service shape.
+	var details templateapi.ErrorDetails
+	if err := apiError.DecodeDetails(&details); err != nil {
+		resp.Diagnostics.AddError("API Error", apiError.Error())
+		return
+	}
+
 	var attributeNames []string
-	for _, attr := range apiError.Details.Attributes {
+	for _, attr := range details.Attributes {
 		attributeNames = append(attributeNames, attr.Name)
 	}
 
@@ -456,7 +464,7 @@ func (r *BiotTemplateResource) ImportState(ctx context.Context, req resource.Imp
 		"template_name": templateName,
 	})
 
-	templateResponse, err := r.client.GetTemplateByTypeAndName(ctx, entityType, templateName)
+	templateResponse, err := r.client.Template.GetByTypeAndName(ctx, entityType, templateName)
 
 	if err != nil {
 		resp.Diagnostics.AddError(
