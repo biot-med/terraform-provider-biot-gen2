@@ -33,6 +33,28 @@ type ConditionResponse struct {
 	Tags        []string               `json:"tags"`
 }
 
+type CreateActionRequest struct {
+	ID          string                 `json:"id"`
+	Description string                 `json:"description"`
+	Value       string                 `json:"value"`
+	Params      map[string]interface{} `json:"params"`
+	Tags        []string               `json:"tags"`
+}
+
+type UpdateActionRequest struct {
+	Description string                 `json:"description"`
+	Params      map[string]interface{} `json:"params"`
+	Tags        []string               `json:"tags"`
+}
+
+type ActionResponse struct {
+	ID          string                 `json:"id"`
+	Description string                 `json:"description"`
+	Value       string                 `json:"value"`
+	Params      map[string]interface{} `json:"params"`
+	Tags        []string               `json:"tags"`
+}
+
 // ErrorDetails is the access-control shape of transport.APIError.Details. Recover it with
 // apiError.DecodeDetails(&details).
 type ErrorDetails struct {

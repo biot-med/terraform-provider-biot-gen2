@@ -21,7 +21,7 @@ Local install for manual Terraform testing:
 
 ## Architecture
 
-This is a **Terraform Plugin Framework** provider for managing BioT configuration. It exposes `biot_template` and `biot_abac_condition` (with ABAC actions and rules to follow), and connects to a BioT backend via a custom HTTP client.
+This is a **Terraform Plugin Framework** provider for managing BioT configuration. It exposes `biot_template`, `biot_abac_condition` and `biot_abac_action` (with ABAC rules to follow), and connects to a BioT backend via a custom HTTP client.
 
 ### Provider (`internal/provider/provider.go`)
 Configures credentials (`base_url`, `service_id`, `service_secret_key`), validates server version compatibility, and registers resources/data sources.
@@ -48,7 +48,7 @@ One package per BioT domain, over shared plumbing. Resources receive `*api.APICl
 To add a new domain: create `internal/api/<domain>/` with a `Client` over `*transport.Client`, then add a field to `APIClient` in `client.go`.
 
 ### ABAC resources (`internal/resources/abac/`)
-Each access-control resource has its own subpackage (`condition/`, and `action/` and `rule/` to come), each exporting `NewResource` and an `Entity`. The parent `abac` package holds only what they share:
+Each access-control resource has its own subpackage (`condition/`, `action/`, and `rule/` to come), each exporting `NewResource` and an `Entity`. The parent `abac` package holds only what they share:
 - `errors.go` — `abac.AddError` maps service error codes to actionable diagnostics. Each resource declares its codes on its `Entity`, because the service names them inconsistently (`CONDITIONS_NOT_FOUND` vs `RULE_NOT_FOUND`). Leave a code empty if the entity has no such error.
 - `tags.go` — the service re-adds `<<BuiltIn>>` on every update of a built-in object, so it is stripped from `tags` and surfaced as a read-only `built_in` attribute. Call `abac.RejectBuiltInTag` from `ValidateConfig`. Tags are otherwise sent exactly as configured.
 

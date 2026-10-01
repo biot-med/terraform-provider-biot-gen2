@@ -46,3 +46,31 @@ func (c *Client) DeleteCondition(ctx context.Context, id string) error {
 
 	return transport.DoNoContent(ctx, c.http, http.MethodDelete, url)
 }
+
+/* Actions */
+
+func (c *Client) CreateAction(ctx context.Context, request CreateActionRequest) (ActionResponse, error) {
+	url := fmt.Sprintf("%s/%s/v1/actions", c.http.BaseURL, servicePrefix)
+
+	return transport.Do[ActionResponse](ctx, c.http, http.MethodPost, url, request)
+}
+
+func (c *Client) GetAction(ctx context.Context, id string) (ActionResponse, error) {
+	url := fmt.Sprintf("%s/%s/v1/actions/%s", c.http.BaseURL, servicePrefix, id)
+
+	return transport.Do[ActionResponse](ctx, c.http, http.MethodGet, url, nil)
+}
+
+// UpdateAction issues a PATCH. The service applies partial updates, but the provider
+// always sends every mutable field - see the note in models.go.
+func (c *Client) UpdateAction(ctx context.Context, id string, request UpdateActionRequest) (ActionResponse, error) {
+	url := fmt.Sprintf("%s/%s/v1/actions/%s", c.http.BaseURL, servicePrefix, id)
+
+	return transport.Do[ActionResponse](ctx, c.http, http.MethodPatch, url, request)
+}
+
+func (c *Client) DeleteAction(ctx context.Context, id string) error {
+	url := fmt.Sprintf("%s/%s/v1/actions/%s", c.http.BaseURL, servicePrefix, id)
+
+	return transport.DoNoContent(ctx, c.http, http.MethodDelete, url)
+}
