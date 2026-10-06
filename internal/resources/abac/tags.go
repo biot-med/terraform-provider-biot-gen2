@@ -68,8 +68,7 @@ func RejectBuiltInTag(tags types.Set, entity Entity, diagnostics *diag.Diagnosti
 				fmt.Sprintf("The tag %q is managed by BioT", BuiltInTag),
 				fmt.Sprintf(`%q marks the %ss that BioT ships, and the service adds and removes it on its own.
 
-Remove it from tags. Whether BioT ships this %s is reported by the read-only
-built_in attribute.`, BuiltInTag, entity.Noun, entity.Noun),
+Remove it from tags. Whether BioT ships this %s is reported by the read-only built_in attribute.`, BuiltInTag, entity.Noun, entity.Noun),
 			)
 		}
 	}

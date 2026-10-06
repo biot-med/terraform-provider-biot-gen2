@@ -23,6 +23,7 @@ var (
 	_ resource.ResourceWithConfigure      = &BiotAbacConditionResource{}
 	_ resource.ResourceWithImportState    = &BiotAbacConditionResource{}
 	_ resource.ResourceWithValidateConfig = &BiotAbacConditionResource{}
+	_ resource.ResourceWithModifyPlan     = &BiotAbacConditionResource{}
 )
 
 // Entity describes conditions to the shared abac helpers.
@@ -83,11 +84,8 @@ func (r *BiotAbacConditionResource) Schema(ctx context.Context, req resource.Sch
 					"`InitiatorAttributeInParamsCondition` or `CompositeCondition`. Only " +
 					"`DYNAMIC` and `COMPOSITE` implementations can be created - BioT rejects " +
 					"the built-in `CLASS` ones, and the error lists everything it accepts. " +
-					"The API cannot change a value, so changing it here destroys and " +
-					"recreates the condition.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
+					"It cannot be changed once the condition exists - to switch " +
+					"implementation, give the condition a new `id` as well.",
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
@@ -140,6 +138,11 @@ func (r *BiotAbacConditionResource) ValidateConfig(ctx context.Context, req reso
 	}
 
 	abac.RejectBuiltInTag(config.Tags, Entity, &resp.Diagnostics)
+}
+
+// ModifyPlan refuses a change of value on an existing condition - see abac.RejectValueChange.
+func (r *BiotAbacConditionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	abac.RejectValueChange(ctx, Entity, req, resp)
 }
 
 func (r *BiotAbacConditionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

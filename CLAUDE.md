@@ -21,7 +21,7 @@ Local install for manual Terraform testing:
 
 ## Architecture
 
-This is a **Terraform Plugin Framework** provider for managing BioT configuration. It exposes `biot_template`, `biot_abac_condition` and `biot_abac_action` (with ABAC rules to follow), and connects to a BioT backend via a custom HTTP client.
+This is a **Terraform Plugin Framework** provider for managing BioT configuration. It exposes `biot_template` and the ABAC resources `biot_abac_condition`, `biot_abac_action` and `biot_abac_rule`, and connects to a BioT backend via a custom HTTP client.
 
 ### Provider (`internal/provider/provider.go`)
 Configures credentials (`base_url`, `service_id`, `service_secret_key`), validates server version compatibility, and registers resources/data sources.
@@ -48,9 +48,11 @@ One package per BioT domain, over shared plumbing. Resources receive `*api.APICl
 To add a new domain: create `internal/api/<domain>/` with a `Client` over `*transport.Client`, then add a field to `APIClient` in `client.go`.
 
 ### ABAC resources (`internal/resources/abac/`)
-Each access-control resource has its own subpackage (`condition/`, `action/`, and `rule/` to come), each exporting `NewResource` and an `Entity`. The parent `abac` package holds only what they share:
+Each access-control resource has its own subpackage (`condition/`, `action/`, `rule/`), each exporting `NewResource` and an `Entity`. The parent `abac` package holds only what they share:
 - `errors.go` — `abac.AddError` maps service error codes to actionable diagnostics. Each resource declares its codes on its `Entity`, because the service names them inconsistently (`CONDITIONS_NOT_FOUND` vs `RULE_NOT_FOUND`). Leave a code empty if the entity has no such error.
 - `tags.go` — the service re-adds `<<BuiltIn>>` on every update of a built-in object, so it is stripped from `tags` and surfaced as a read-only `built_in` attribute. Call `abac.RejectBuiltInTag` from `ValidateConfig`. Tags are otherwise sent exactly as configured.
+- `rule/` differs from the other two: its nested sets (`conditions`, `api_execution_points`) make every inner attribute `Required` — never `Default` inside a set element (SOFT-9875). `rule/errors.go` handles `ACTIONS_NOT_FOUND`/`CONDITIONS_NOT_FOUND`, which for a rule mean a dangling reference rather than drift; `rule/validate.go` rejects at plan time what the service would (empty sets, duplicate conditions, duplicate api + execution point).
+- `value` on conditions and actions is the implementation class (not `params.values`). The service cannot change it after creation, so `abac.RejectValueChange` (called from `ModifyPlan`) fails the plan unless `id` changes too. It is deliberately not `RequiresReplace`: replacing deletes the object, and the service then cascades it out of every rule that uses it (`ON DELETE CASCADE`).
 
 ### Custom Plan Modifiers (`internal/resources/biot_plan_modifiers/`)
 - `CopyIDFromStateByNameSetModifier` — preserves computed IDs across plan cycles by matching on `name`

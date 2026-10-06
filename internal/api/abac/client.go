@@ -74,3 +74,31 @@ func (c *Client) DeleteAction(ctx context.Context, id string) error {
 
 	return transport.DoNoContent(ctx, c.http, http.MethodDelete, url)
 }
+
+/* Rules */
+
+func (c *Client) CreateRule(ctx context.Context, request CreateRuleRequest) (RuleResponse, error) {
+	url := fmt.Sprintf("%s/%s/v1/rules", c.http.BaseURL, servicePrefix)
+
+	return transport.Do[RuleResponse](ctx, c.http, http.MethodPost, url, request)
+}
+
+func (c *Client) GetRule(ctx context.Context, id string) (RuleResponse, error) {
+	url := fmt.Sprintf("%s/%s/v1/rules/%s", c.http.BaseURL, servicePrefix, id)
+
+	return transport.Do[RuleResponse](ctx, c.http, http.MethodGet, url, nil)
+}
+
+// UpdateRule issues a PATCH. The service applies partial updates, but the provider
+// always sends every mutable field - see the note in models.go.
+func (c *Client) UpdateRule(ctx context.Context, id string, request UpdateRuleRequest) (RuleResponse, error) {
+	url := fmt.Sprintf("%s/%s/v1/rules/%s", c.http.BaseURL, servicePrefix, id)
+
+	return transport.Do[RuleResponse](ctx, c.http, http.MethodPatch, url, request)
+}
+
+func (c *Client) DeleteRule(ctx context.Context, id string) error {
+	url := fmt.Sprintf("%s/%s/v1/rules/%s", c.http.BaseURL, servicePrefix, id)
+
+	return transport.DoNoContent(ctx, c.http, http.MethodDelete, url)
+}

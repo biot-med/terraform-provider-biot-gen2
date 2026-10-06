@@ -55,6 +55,57 @@ type ActionResponse struct {
 	Tags        []string               `json:"tags"`
 }
 
+// Rules reference actions and conditions by id. The service also wraps each action id in
+// an object of its own, which RuleActionRef mirrors.
+type RuleActionRef struct {
+	ID string `json:"id"`
+}
+
+type RuleConditionRef struct {
+	ID       string `json:"id"`
+	Inverted bool   `json:"inverted"`
+}
+
+// RuleAPIExecutionPoint binds a rule to one API. APIID is the HTTP method followed directly by
+// the path template, e.g. "GET/organization/v1/users/patients/{id}".
+//
+// The response form carries an extra derived `tags` field per execution point; it is copied
+// from the rule's own tags and is not settable, so it is deliberately not modelled here.
+type RuleAPIExecutionPoint struct {
+	APIID          string `json:"apiId"`
+	ExecutionPoint string `json:"apiExecutionPoint"`
+	Order          int64  `json:"order"`
+	Enabled        bool   `json:"enabled"`
+}
+
+type CreateRuleRequest struct {
+	ID                 string                  `json:"id"`
+	Description        string                  `json:"description"`
+	Actions            []RuleActionRef         `json:"actions"`
+	Conditions         []RuleConditionRef      `json:"conditions"`
+	APIExecutionPoints []RuleAPIExecutionPoint `json:"apiExecutionPoints"`
+	Tags               []string                `json:"tags"`
+}
+
+// UpdateRuleRequest replaces actions, conditions and execution points wholesale whenever they
+// are present, which they always are - see the note at the top of this file.
+type UpdateRuleRequest struct {
+	Description        string                  `json:"description"`
+	Actions            []RuleActionRef         `json:"actions"`
+	Conditions         []RuleConditionRef      `json:"conditions"`
+	APIExecutionPoints []RuleAPIExecutionPoint `json:"apiExecutionPoints"`
+	Tags               []string                `json:"tags"`
+}
+
+type RuleResponse struct {
+	ID                 string                  `json:"id"`
+	Description        string                  `json:"description"`
+	Actions            []RuleActionRef         `json:"actions"`
+	Conditions         []RuleConditionRef      `json:"conditions"`
+	APIExecutionPoints []RuleAPIExecutionPoint `json:"apiExecutionPoints"`
+	Tags               []string                `json:"tags"`
+}
+
 // ErrorDetails is the access-control shape of transport.APIError.Details. Recover it with
 // apiError.DecodeDetails(&details).
 type ErrorDetails struct {

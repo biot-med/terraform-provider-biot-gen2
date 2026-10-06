@@ -23,6 +23,7 @@ var (
 	_ resource.ResourceWithConfigure      = &BiotAbacActionResource{}
 	_ resource.ResourceWithImportState    = &BiotAbacActionResource{}
 	_ resource.ResourceWithValidateConfig = &BiotAbacActionResource{}
+	_ resource.ResourceWithModifyPlan     = &BiotAbacActionResource{}
 )
 
 // Entity describes actions to the shared abac helpers.
@@ -84,11 +85,8 @@ func (r *BiotAbacActionResource) Schema(ctx context.Context, req resource.Schema
 					"`AddSearchFilterAction` or `RemoveAttributesInParamsAction`. Only " +
 					"`DYNAMIC` implementations can be created - BioT rejects " +
 					"the built-in `CLASS` ones, and the error lists everything it accepts. " +
-					"The API cannot change a value, so changing it here destroys and " +
-					"recreates the action.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
+					"It cannot be changed once the action exists - to switch " +
+					"implementation, give the action a new `id` as well.",
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
@@ -141,6 +139,11 @@ func (r *BiotAbacActionResource) ValidateConfig(ctx context.Context, req resourc
 	}
 
 	abac.RejectBuiltInTag(config.Tags, Entity, &resp.Diagnostics)
+}
+
+// ModifyPlan refuses a change of value on an existing action - see abac.RejectValueChange.
+func (r *BiotAbacActionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	abac.RejectValueChange(ctx, Entity, req, resp)
 }
 
 func (r *BiotAbacActionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

@@ -19,6 +19,7 @@ import (
 	"biot.com/terraform-provider-biot-gen2/internal/api"
 	"biot.com/terraform-provider-biot-gen2/internal/resources/abac/action"
 	"biot.com/terraform-provider-biot-gen2/internal/resources/abac/condition"
+	"biot.com/terraform-provider-biot-gen2/internal/resources/abac/rule"
 	"biot.com/terraform-provider-biot-gen2/internal/resources/template"
 	"biot.com/terraform-provider-biot-gen2/internal/version"
 )
@@ -143,6 +144,7 @@ func (p *BiotProvider) Resources(ctx context.Context) []func() resource.Resource
 		template.NewResource,
 		condition.NewResource,
 		action.NewResource,
+		rule.NewResource,
 	}
 }
 
