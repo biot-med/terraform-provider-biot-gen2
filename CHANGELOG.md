@@ -1,3 +1,11 @@
+## 1.1.0
+
+**Release date**: Oct 06, 2026
+- [SOFT-9880] Added ABAC (access-control) resources, so conditions, actions and rules can be managed in Terraform and promoted between environments
+    - `biot_abac_condition`, `biot_abac_action` and `biot_abac_rule`, importable by id
+    - The `<<BuiltIn>>` tag is managed by BioT and exposed as a read-only `built_in` attribute instead of appearing in `tags`
+    - Changing the `value` (implementation) of an existing condition or action is refused at plan time; give it a new `id` to switch implementation
+
 ## 1.0.11
 
 **Release date**: Sep 14, 2026
