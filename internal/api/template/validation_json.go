@@ -1,4 +1,4 @@
-package api
+package template
 
 import (
 	"encoding/json"

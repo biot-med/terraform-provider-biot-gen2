@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 
-	"biot.com/terraform-provider-biot-gen2/internal/api"
+	templateapi "biot.com/terraform-provider-biot-gen2/internal/api/template"
 	"biot.com/terraform-provider-biot-gen2/internal/utils"
 )
 
-func MapTerraformTemplateToCreateRequest(ctx context.Context, t TerraformTemplate) api.CreateTemplateRequest {
-	return api.CreateTemplateRequest{
-		BaseTemplate: api.BaseTemplate{
+func MapTerraformTemplateToCreateRequest(ctx context.Context, t TerraformTemplate) templateapi.CreateTemplateRequest {
+	return templateapi.CreateTemplateRequest{
+		BaseTemplate: templateapi.BaseTemplate{
 			DisplayName:              utils.StringOrEmpty(t.DisplayName),
 			Name:                     utils.StringOrEmpty(t.Name),
 			Description:              utils.StringOrNilPtr(t.Description),
@@ -25,9 +25,9 @@ func MapTerraformTemplateToCreateRequest(ctx context.Context, t TerraformTemplat
 	}
 }
 
-func MapTerraformTemplateToUpdateRequest(ctx context.Context, t TerraformTemplate) api.UpdateTemplateRequest {
-	return api.UpdateTemplateRequest{
-		BaseTemplate: api.BaseTemplate{
+func MapTerraformTemplateToUpdateRequest(ctx context.Context, t TerraformTemplate) templateapi.UpdateTemplateRequest {
+	return templateapi.UpdateTemplateRequest{
+		BaseTemplate: templateapi.BaseTemplate{
 			DisplayName:              utils.StringOrEmpty(t.DisplayName),
 			Name:                     utils.StringOrEmpty(t.Name),
 			Description:              utils.StringOrNilPtr(t.Description),
@@ -41,18 +41,18 @@ func MapTerraformTemplateToUpdateRequest(ctx context.Context, t TerraformTemplat
 	}
 }
 
-func mapAnalyticsDbConfig(ctx context.Context, c *TerraformAnalyticsDbConfiguration) *api.AnalyticsDbConfiguration {
+func mapAnalyticsDbConfig(ctx context.Context, c *TerraformAnalyticsDbConfiguration) *templateapi.AnalyticsDbConfiguration {
 	if c == nil || c.Name.IsNull() || c.Name.IsUnknown() {
 		return nil
 	}
 
-	return &api.AnalyticsDbConfiguration{
+	return &templateapi.AnalyticsDbConfiguration{
 		Name: c.Name.ValueString(),
 	}
 }
 
-func mapBaseAttribute(ctx context.Context, attr BaseTerraformAttribute) api.BaseAttribute {
-	return api.BaseAttribute{
+func mapBaseAttribute(ctx context.Context, attr BaseTerraformAttribute) templateapi.BaseAttribute {
+	return templateapi.BaseAttribute{
 		Name:                   attr.Name.ValueString(),
 		BasePath:               utils.StringOrNilPtr(attr.BasePath),
 		ID:                     attr.ID.ValueString(),
@@ -68,10 +68,10 @@ func mapBaseAttribute(ctx context.Context, attr BaseTerraformAttribute) api.Base
 	}
 }
 
-func mapCustomAttributes(ctx context.Context, attrs []TerraformCustomAttribute) []api.CustomAttributeRequest {
-	result := []api.CustomAttributeRequest{}
+func mapCustomAttributes(ctx context.Context, attrs []TerraformCustomAttribute) []templateapi.CustomAttributeRequest {
+	result := []templateapi.CustomAttributeRequest{}
 	for _, attr := range attrs {
-		result = append(result, api.CustomAttributeRequest{
+		result = append(result, templateapi.CustomAttributeRequest{
 			BaseAttribute:            mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
 			Category:                 attr.Category.ValueString(),
 			AnalyticsDbConfiguration: mapAnalyticsDbConfig(ctx, attr.AnalyticsDbConfiguration),
@@ -80,10 +80,10 @@ func mapCustomAttributes(ctx context.Context, attrs []TerraformCustomAttribute) 
 	return result
 }
 
-func mapBuiltinAttributes(ctx context.Context, attrs []TerraformBuiltinAttribute) []api.BuiltinAttributeRequest {
-	result := []api.BuiltinAttributeRequest{}
+func mapBuiltinAttributes(ctx context.Context, attrs []TerraformBuiltinAttribute) []templateapi.BuiltinAttributeRequest {
+	result := []templateapi.BuiltinAttributeRequest{}
 	for _, attr := range attrs {
-		result = append(result, api.BuiltinAttributeRequest{
+		result = append(result, templateapi.BuiltinAttributeRequest{
 			BaseAttribute:            mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
 			AnalyticsDbConfiguration: mapAnalyticsDbConfig(ctx, attr.AnalyticsDbConfiguration),
 		})
@@ -91,8 +91,8 @@ func mapBuiltinAttributes(ctx context.Context, attrs []TerraformBuiltinAttribute
 	return result
 }
 
-func mapTemplateAttributes(ctx context.Context, attrs []TerraformTemplateAttribute) []api.TemplateAttributeRequest {
-	result := make([]api.TemplateAttributeRequest, 0, len(attrs))
+func mapTemplateAttributes(ctx context.Context, attrs []TerraformTemplateAttribute) []templateapi.TemplateAttributeRequest {
+	result := make([]templateapi.TemplateAttributeRequest, 0, len(attrs))
 
 	for _, attr := range attrs {
 		var value interface{}
@@ -111,7 +111,7 @@ func mapTemplateAttributes(ctx context.Context, attrs []TerraformTemplateAttribu
 			value = nil
 		}
 
-		result = append(result, api.TemplateAttributeRequest{
+		result = append(result, templateapi.TemplateAttributeRequest{
 			BaseAttribute:                      mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
 			Value:                              value,
 			OrganizationSelectionConfiguration: mapOrgSelection(attr.OrganizationSelection),
@@ -121,12 +121,12 @@ func mapTemplateAttributes(ctx context.Context, attrs []TerraformTemplateAttribu
 	return result
 }
 
-func mapReferenceConfiguration(rc *TerraformReferenceConfiguration) *api.ReferenceConfiguration {
+func mapReferenceConfiguration(rc *TerraformReferenceConfiguration) *templateapi.ReferenceConfiguration {
 	if rc == nil {
 		return nil
 	}
 
-	return &api.ReferenceConfiguration{
+	return &templateapi.ReferenceConfiguration{
 		Uniquely:                           rc.Uniquely.ValueBool(),
 		ReferencedSideAttributeName:        rc.ReferencedSideAttributeName.ValueString(),
 		ReferencedSideAttributeDisplayName: rc.ReferencedSideAttributeDisplayName.ValueString(),
@@ -135,23 +135,23 @@ func mapReferenceConfiguration(rc *TerraformReferenceConfiguration) *api.Referen
 	}
 }
 
-func mapLinkConfiguration(lc *TerraformLinkConfiguration) *api.LinkConfiguration {
+func mapLinkConfiguration(lc *TerraformLinkConfiguration) *templateapi.LinkConfiguration {
 	if lc == nil {
 		return nil
 	}
-	return &api.LinkConfiguration{
+	return &templateapi.LinkConfiguration{
 		EntityTypeName: lc.EntityTypeName.ValueString(),
 		TemplateID:     lc.TemplateID.ValueString(),
 		AttributeID:    lc.AttributeID.ValueString(),
 	}
 }
 
-func mapValidation(v *TerraformValidation) *api.Validation {
+func mapValidation(v *TerraformValidation) *templateapi.Validation {
 	if v == nil {
 		return nil
 	}
 
-	validation := &api.Validation{
+	validation := &templateapi.Validation{
 		Mandatory: utils.BoolOrNilPtr(v.Mandatory),
 		Unique:    utils.BoolOrNilPtr(v.Unique),
 	}
@@ -179,12 +179,12 @@ func mapValidation(v *TerraformValidation) *api.Validation {
 	return validation
 }
 
-func mapNumericMetaData(numericMetaData *TerraformNumericMetaData) *api.NumericMetaData {
+func mapNumericMetaData(numericMetaData *TerraformNumericMetaData) *templateapi.NumericMetaData {
 	if numericMetaData == nil {
 		return nil
 	}
 
-	return &api.NumericMetaData{
+	return &templateapi.NumericMetaData{
 		Units:      utils.StringOrNilPtr(numericMetaData.Units),
 		UpperRange: utils.Float64OrNilPtr(numericMetaData.UpperRange),
 		LowerRange: utils.Float64OrNilPtr(numericMetaData.LowerRange),
@@ -192,21 +192,21 @@ func mapNumericMetaData(numericMetaData *TerraformNumericMetaData) *api.NumericM
 	}
 }
 
-func mapUiConfiguration(uiConfiguration *TerraformUiConfiguration) *api.UiConfiguration {
+func mapUiConfiguration(uiConfiguration *TerraformUiConfiguration) *templateapi.UiConfiguration {
 	if uiConfiguration == nil {
 		return nil
 	}
 
-	result := &api.UiConfiguration{}
+	result := &templateapi.UiConfiguration{}
 
 	if uiConfiguration.Date != nil {
-		result.Date = &api.DateUiConfiguration{
+		result.Date = &templateapi.DateUiConfiguration{
 			DateStyle: utils.StringOrNilPtr(uiConfiguration.Date.DateStyle),
 		}
 	}
 
 	if uiConfiguration.DateTime != nil {
-		result.DateTime = &api.DateTimeUiConfiguration{
+		result.DateTime = &templateapi.DateTimeUiConfiguration{
 			DateStyle: utils.StringOrNilPtr(uiConfiguration.DateTime.DateStyle),
 			TimeStyle: utils.StringOrNilPtr(uiConfiguration.DateTime.TimeStyle),
 		}
@@ -215,14 +215,14 @@ func mapUiConfiguration(uiConfiguration *TerraformUiConfiguration) *api.UiConfig
 	return result
 }
 
-func mapSelectableValues(attributeType string, vals []TerraformSelectableValue) []api.SelectableValue {
-	result := []api.SelectableValue{}
+func mapSelectableValues(attributeType string, vals []TerraformSelectableValue) []templateapi.SelectableValue {
+	result := []templateapi.SelectableValue{}
 	if attributeType == "TIMEZONE" || attributeType == "LOCALE" {
-		return []api.SelectableValue{}
+		return []templateapi.SelectableValue{}
 	}
 
 	for _, val := range vals {
-		result = append(result, api.SelectableValue{
+		result = append(result, templateapi.SelectableValue{
 			Name:        val.Name.ValueString(),
 			DisplayName: val.DisplayName.ValueString(),
 			ID:          utils.StringOrEmpty(val.ID),
@@ -231,17 +231,17 @@ func mapSelectableValues(attributeType string, vals []TerraformSelectableValue) 
 	return result
 }
 
-func mapOrgSelection(organizationSelection *TerraformOrganizationSelection) *api.OrganizationSelectionConfiguration {
+func mapOrgSelection(organizationSelection *TerraformOrganizationSelection) *templateapi.OrganizationSelectionConfiguration {
 	if organizationSelection == nil {
 		return nil
 	}
 
-	selected := make([]api.IDWrapper, len(organizationSelection.Selected))
+	selected := make([]templateapi.IDWrapper, len(organizationSelection.Selected))
 	for i, s := range organizationSelection.Selected {
-		selected[i] = api.IDWrapper{ID: s.ID.ValueString()}
+		selected[i] = templateapi.IDWrapper{ID: s.ID.ValueString()}
 	}
 
-	return &api.OrganizationSelectionConfiguration{
+	return &templateapi.OrganizationSelectionConfiguration{
 		Selected: selected,
 		All:      organizationSelection.All.ValueBool(),
 	}
