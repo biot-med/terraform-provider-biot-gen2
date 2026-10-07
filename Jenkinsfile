@@ -29,39 +29,12 @@ pipeline {
                     $class: 'GitSCM',
                     branches: [[name: '*/master']],
                     userRemoteConfigs: [[
-                        url: 'https://github.com/biot-med/terraform-provider-biot-gen2.git',
-                        credentialsId: 'github_token_for_terraform'
+                        url: 'https://github.com/biot-med/terraform-provider-biot-gen2.git'
                     ]]
                 ])
             }
         }
         
-        stage('Check Branch') {
-            steps {
-                script {
-                    // Get the branch name from environment or git
-                    env.BRANCH_NAME = env.GIT_BRANCH ?: sh(
-                        script: 'git rev-parse --abbrev-ref HEAD',
-                        returnStdout: true
-                    ).trim()
-                    
-                    // Remove 'origin/' prefix if present
-                    env.BRANCH_NAME = env.BRANCH_NAME.replaceAll('origin/', '')
-                    
-                    echo "Current branch: ${env.BRANCH_NAME}"
-                    
-                    // Only proceed if on master branch
-                    if (env.BRANCH_NAME != 'master') {
-                        echo "Skipping pipeline - not on master branch (current: ${env.BRANCH_NAME})"
-                        currentBuild.result = 'ABORTED'
-                        return
-                    }
-                    
-                    echo "✓ Running on master branch"
-                }
-            }
-        }
-
         stage('Extract Version') {
             steps {
                 script {
@@ -108,7 +81,7 @@ pipeline {
 
                     // Install Go if not installed
                     sh '''
-                        if ! command -v go &> /dev/null; then
+                        if ! command -v go >/dev/null 2>&1; then
                             echo "Go is not installed. Installing Go to user directory..."
 
                             # Install to user-writable directory
@@ -134,7 +107,7 @@ pipeline {
 
                     // Install GoReleaser if not installed
                     sh '''
-                        if ! command -v goreleaser &> /dev/null; then
+                        if ! command -v goreleaser >/dev/null 2>&1; then
                             echo "GoReleaser is not installed. Installing to user directory..."
 
                             INSTALL_DIR="$HOME/.local/bin"
@@ -144,7 +117,7 @@ pipeline {
                             export PATH="$INSTALL_DIR:$PATH"
 
                             # Install GoReleaser using the official method
-                            if command -v curl &> /dev/null; then
+                            if command -v curl >/dev/null 2>&1; then
                                 curl -sL https://github.com/goreleaser/goreleaser/releases/latest/download/goreleaser_Linux_x86_64.tar.gz | tar -xz -C "$INSTALL_DIR" goreleaser
                                 chmod +x "$INSTALL_DIR/goreleaser"
                                 echo "✓ GoReleaser installed successfully to $INSTALL_DIR"
@@ -159,7 +132,7 @@ pipeline {
 
                     // Check if GPG is installed (cannot install without sudo)
                     sh '''
-                        if ! command -v gpg &> /dev/null; then
+                        if ! command -v gpg >/dev/null 2>&1; then
                             echo "Warning: GPG is not installed."
                             echo "GPG is required for signing releases. Please ensure GPG is pre-installed on the Jenkins agent."
                             echo "The build will continue but may fail during the release stage if GPG signing is required."
@@ -221,7 +194,8 @@ pipeline {
 
                         git tag -a "${VERSION_TAG}" -m "Release ${VERSION_TAG}"
 
-                        git push https://$GITHUB_TOKEN@github.com/biot-med/terraform-provider-biot-gen2.git ${VERSION_TAG}
+                        # Feed the Jenkins token to git via a credential helper: no token in the URL, no password prompt
+                        git -c credential.helper='!f() { echo username=x-access-token; echo "password=$GITHUB_TOKEN"; }; f' push https://github.com/biot-med/terraform-provider-biot-gen2.git "${VERSION_TAG}"
                         echo "Pushed tag to remote"
                     '''
                 }
