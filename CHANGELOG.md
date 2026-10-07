@@ -1,10 +1,16 @@
 ## 1.1.0
 
-**Release date**: Oct 06, 2026
+**Release date**: Oct 07, 2026
 - [SOFT-9880] Added ABAC (access-control) resources, so conditions, actions and rules can be managed in Terraform and promoted between environments
-    - `biot_abac_condition`, `biot_abac_action` and `biot_abac_rule`, importable by id
+    - `biot_abac_condition`, `biot_abac_action` and `biot_abac_rule`, importable by id or, with an `import` block, by `identity = { id = "..." }`
     - The `<<BuiltIn>>` tag is managed by BioT and exposed as a read-only `built_in` attribute instead of appearing in `tags`
     - Changing the `value` (implementation) of an existing condition or action is refused at plan time; give it a new `id` to switch implementation
+    - Rules that BioT stores with no API execution points can be imported and managed with `api_execution_points = []`. Creating a rule still requires at least one, which is checked at plan time
+- [SOFT-9880] Added `terraform query` support (Terraform 1.14+) for all three ABAC resources, to list existing objects and generate the configuration to import them with `-generate-config-out`
+    - Filters: `built_in` and `value` for conditions and actions; `built_in`, `api_id`, `action_id` and `condition_id` for rules
+    - Static (`CLASS`) conditions and actions are not listed, since they cannot be created and take no params
+    - Generated configuration refers to the provider as `biot-gen2`, so declare it under that name in `required_providers`
+- Upgraded `terraform-plugin-framework` to v1.19.0
 
 ## 1.0.11
 

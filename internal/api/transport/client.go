@@ -160,7 +160,7 @@ func isResponseOk(response *http.Response) bool {
 }
 
 // EncodeSearchRequest renders a search request for use as a query-string parameter.
-func EncodeSearchRequest(searchRequest map[string]interface{}) (string, error) {
+func EncodeSearchRequest(searchRequest any) (string, error) {
 	jsonBytes, err := json.Marshal(searchRequest)
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal search request: %w", err)

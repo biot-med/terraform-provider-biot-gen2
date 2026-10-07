@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/function"
+	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -23,6 +24,8 @@ import (
 	"biot.com/terraform-provider-biot-gen2/internal/resources/template"
 	"biot.com/terraform-provider-biot-gen2/internal/version"
 )
+
+var _ provider.ProviderWithListResources = &BiotProvider{}
 
 type BiotProvider struct {
 	// version is set to the provider version on release, "dev" when the
@@ -137,6 +140,7 @@ func (p *BiotProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 	// Example client configuration for data sources and resources
 	resp.DataSourceData = client
 	resp.ResourceData = client
+	resp.ListResourceData = client
 }
 
 func (p *BiotProvider) Resources(ctx context.Context) []func() resource.Resource {
@@ -145,6 +149,16 @@ func (p *BiotProvider) Resources(ctx context.Context) []func() resource.Resource
 		condition.NewResource,
 		action.NewResource,
 		rule.NewResource,
+	}
+}
+
+// ListResources backs `list` blocks in .tfquery.hcl files, used by `terraform query`
+// (Terraform 1.14+) to find existing objects and generate the configuration to import them.
+func (p *BiotProvider) ListResources(ctx context.Context) []func() list.ListResource {
+	return []func() list.ListResource{
+		condition.NewListResource,
+		action.NewListResource,
+		rule.NewListResource,
 	}
 }
 

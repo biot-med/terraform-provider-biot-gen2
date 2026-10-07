@@ -56,20 +56,15 @@ func validateConditions(conditions types.Set, diagnostics *diag.Diagnostics) {
 	}
 }
 
-// validateAPIExecutionPoints: at least one is required, api_execution_point must be one the
-// service knows, and each (api_id, api_execution_point) pair may appear once - the service
-// keys execution points by that pair and fails on duplicates.
+// validateAPIExecutionPoints: api_execution_point must be one the service knows, and each
+// (api_id, api_execution_point) pair may appear once - the service keys execution points by
+// that pair and fails on duplicates.
+//
+// An empty list is allowed here. BioT stores rules with no execution points - an update may set
+// them to [] - and those must import and plan cleanly. Only creating a rule requires one; see
+// validateNewRuleExecutionPoints.
 func validateAPIExecutionPoints(points types.Set, diagnostics *diag.Diagnostics) {
 	if points.IsNull() || points.IsUnknown() {
-		return
-	}
-
-	if len(points.Elements()) == 0 {
-		diagnostics.AddAttributeError(
-			path.Root("api_execution_points"),
-			"A rule needs at least one API execution point",
-			"api_execution_points is empty. Add the API the rule should run on.",
-		)
 		return
 	}
 
@@ -125,4 +120,22 @@ func contains(values []string, wanted string) bool {
 	}
 
 	return false
+}
+
+// validateNewRuleExecutionPoints: creating a rule requires at least one execution point
+// (@NotEmpty on CreateRuleRequest), while updating one may leave it with none. So this runs only
+// for a plan that creates the rule - see ModifyPlan - and never in ValidateConfig, which also
+// runs for rules that already exist.
+func validateNewRuleExecutionPoints(points types.Set, diagnostics *diag.Diagnostics) {
+	if points.IsNull() || points.IsUnknown() {
+		return
+	}
+
+	if len(points.Elements()) == 0 {
+		diagnostics.AddAttributeError(
+			path.Root("api_execution_points"),
+			"A new rule needs at least one API execution point",
+			"BioT requires at least one API execution point when a rule is created, and this plan creates the rule - either it is new, or it is being replaced (a change of id, -replace, or replace_triggered_by). Add the API the rule should run on.\n\nRules that already exist in BioT with no execution points are fine with api_execution_points = [] as long as they are updated rather than created.",
+		)
+	}
 }

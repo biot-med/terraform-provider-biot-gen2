@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -24,6 +25,7 @@ var (
 	_ resource.ResourceWithImportState    = &BiotAbacActionResource{}
 	_ resource.ResourceWithValidateConfig = &BiotAbacActionResource{}
 	_ resource.ResourceWithModifyPlan     = &BiotAbacActionResource{}
+	_ resource.ResourceWithIdentity       = &BiotAbacActionResource{}
 )
 
 // Entity describes actions to the shared abac helpers.
@@ -129,6 +131,19 @@ func (r *BiotAbacActionResource) Schema(ctx context.Context, req resource.Schema
 	}
 }
 
+// IdentitySchema identifies an action by its id. It is what `terraform query` returns for each
+// action it finds, and what an `import { identity = { id = "..." } }` block takes.
+func (r *BiotAbacActionResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"id": identityschema.StringAttribute{
+				RequiredForImport: true,
+				Description:       "The id of the action.",
+			},
+		},
+	}
+}
+
 // ValidateConfig rejects the built-in marker in tags - see abac.RejectBuiltInTag.
 func (r *BiotAbacActionResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var config TerraformAbacAction
@@ -173,6 +188,7 @@ func (r *BiotAbacActionResource) Create(ctx context.Context, req resource.Create
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
+	resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, path.Root("id"), model.ID)...)
 }
 
 func (r *BiotAbacActionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -201,6 +217,7 @@ func (r *BiotAbacActionResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
+	resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, path.Root("id"), model.ID)...)
 }
 
 func (r *BiotAbacActionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -230,6 +247,7 @@ func (r *BiotAbacActionResource) Update(ctx context.Context, req resource.Update
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
+	resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, path.Root("id"), model.ID)...)
 }
 
 func (r *BiotAbacActionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -250,7 +268,8 @@ func (r *BiotAbacActionResource) Delete(ctx context.Context, req resource.Delete
 	}
 }
 
-// Actions are imported by their id, which is the same id used in the configuration.
+// Actions are imported by their id - either `terraform import <address> <id>`, or an import
+// block with `id = "..."` or `identity = { id = "..." }`.
 func (r *BiotAbacActionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
 }

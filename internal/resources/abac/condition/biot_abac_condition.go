@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -23,6 +24,7 @@ var (
 	_ resource.ResourceWithConfigure      = &BiotAbacConditionResource{}
 	_ resource.ResourceWithImportState    = &BiotAbacConditionResource{}
 	_ resource.ResourceWithValidateConfig = &BiotAbacConditionResource{}
+	_ resource.ResourceWithIdentity       = &BiotAbacConditionResource{}
 	_ resource.ResourceWithModifyPlan     = &BiotAbacConditionResource{}
 )
 
@@ -128,6 +130,19 @@ func (r *BiotAbacConditionResource) Schema(ctx context.Context, req resource.Sch
 	}
 }
 
+// IdentitySchema identifies a condition by its id. It is what `terraform query` returns for each
+// condition it finds, and what an `import { identity = { id = "..." } }` block takes.
+func (r *BiotAbacConditionResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"id": identityschema.StringAttribute{
+				RequiredForImport: true,
+				Description:       "The id of the condition.",
+			},
+		},
+	}
+}
+
 // ValidateConfig rejects the built-in marker in tags - see abac.RejectBuiltInTag.
 func (r *BiotAbacConditionResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var config TerraformAbacCondition
@@ -172,6 +187,7 @@ func (r *BiotAbacConditionResource) Create(ctx context.Context, req resource.Cre
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
+	resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, path.Root("id"), model.ID)...)
 }
 
 func (r *BiotAbacConditionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -200,6 +216,7 @@ func (r *BiotAbacConditionResource) Read(ctx context.Context, req resource.ReadR
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
+	resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, path.Root("id"), model.ID)...)
 }
 
 func (r *BiotAbacConditionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -229,6 +246,7 @@ func (r *BiotAbacConditionResource) Update(ctx context.Context, req resource.Upd
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
+	resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, path.Root("id"), model.ID)...)
 }
 
 func (r *BiotAbacConditionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -249,7 +267,8 @@ func (r *BiotAbacConditionResource) Delete(ctx context.Context, req resource.Del
 	}
 }
 
-// Conditions are imported by their id, which is the same id used in the configuration.
+// Conditions are imported by their id - either `terraform import <address> <id>`, or an import
+// block with `id = "..."` or `identity = { id = "..." }`.
 func (r *BiotAbacConditionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
 }

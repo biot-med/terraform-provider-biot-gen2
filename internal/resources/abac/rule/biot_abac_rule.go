@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -24,6 +25,8 @@ var (
 	_ resource.ResourceWithConfigure      = &BiotAbacRuleResource{}
 	_ resource.ResourceWithImportState    = &BiotAbacRuleResource{}
 	_ resource.ResourceWithValidateConfig = &BiotAbacRuleResource{}
+	_ resource.ResourceWithIdentity       = &BiotAbacRuleResource{}
+	_ resource.ResourceWithModifyPlan     = &BiotAbacRuleResource{}
 )
 
 // Entity describes rules to the shared abac helpers. Rules have no implementation value, so
@@ -120,8 +123,11 @@ func (r *BiotAbacRuleResource) Schema(ctx context.Context, req resource.SchemaRe
 				},
 			},
 			"api_execution_points": schema.SetNestedAttribute{
-				Required:            true,
-				MarkdownDescription: "The APIs the rule runs on. At least one is required.",
+				Required: true,
+				MarkdownDescription: "The APIs the rule runs on. A new rule needs at least one. A rule " +
+					"that already exists in BioT with none - BioT allows clearing them on update - can " +
+					"be imported and managed with `api_execution_points = []`, but not recreated that " +
+					"way.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"api_id": schema.StringAttribute{
@@ -170,6 +176,19 @@ func (r *BiotAbacRuleResource) Schema(ctx context.Context, req resource.SchemaRe
 	}
 }
 
+// IdentitySchema identifies a rule by its id. It is what `terraform query` returns for each
+// rule it finds, and what an `import { identity = { id = "..." } }` block takes.
+func (r *BiotAbacRuleResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"id": identityschema.StringAttribute{
+				RequiredForImport: true,
+				Description:       "The id of the rule.",
+			},
+		},
+	}
+}
+
 // ValidateConfig turns what the service would reject into plan-time errors - see validate.go.
 func (r *BiotAbacRuleResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var config TerraformAbacRule
@@ -183,6 +202,26 @@ func (r *BiotAbacRuleResource) ValidateConfig(ctx context.Context, req resource.
 	validateActionIDs(config.ActionIDs, &resp.Diagnostics)
 	validateConditions(config.Conditions, &resp.Diagnostics)
 	validateAPIExecutionPoints(config.APIExecutionPoints, &resp.Diagnostics)
+}
+
+// ModifyPlan enforces what only creating a rule requires - see validateNewRuleExecutionPoints.
+//
+// A null prior state covers every create, replacements included: when a rule is replaced -
+// an id change, `-replace`, or `replace_triggered_by` - Terraform plans the new object a second
+// time with no prior state, and that is the plan this check rejects. (resp.RequiresReplace is
+// no help here: the framework always hands resource-level ModifyPlan an empty one.)
+func (r *BiotAbacRuleResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() {
+		return // destroy, or an update of an existing rule
+	}
+
+	var points types.Set
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("api_execution_points"), &points)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	validateNewRuleExecutionPoints(points, &resp.Diagnostics)
 }
 
 func (r *BiotAbacRuleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -212,6 +251,7 @@ func (r *BiotAbacRuleResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
+	resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, path.Root("id"), model.ID)...)
 }
 
 func (r *BiotAbacRuleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -241,6 +281,7 @@ func (r *BiotAbacRuleResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
+	resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, path.Root("id"), model.ID)...)
 }
 
 func (r *BiotAbacRuleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -272,6 +313,7 @@ func (r *BiotAbacRuleResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
+	resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, path.Root("id"), model.ID)...)
 }
 
 func (r *BiotAbacRuleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -292,7 +334,8 @@ func (r *BiotAbacRuleResource) Delete(ctx context.Context, req resource.DeleteRe
 	}
 }
 
-// Rules are imported by their id, which is the same id used in the configuration.
+// Rules are imported by their id - either `terraform import <address> <id>`, or an import
+// block with `id = "..."` or `identity = { id = "..." }`.
 func (r *BiotAbacRuleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
 }

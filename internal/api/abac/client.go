@@ -4,6 +4,7 @@ package abac
 import (
 	"context"
 	"fmt"
+	"iter"
 	"net/http"
 
 	"biot.com/terraform-provider-biot-gen2/internal/api/transport"
@@ -41,6 +42,14 @@ func (c *Client) UpdateCondition(ctx context.Context, id string, request UpdateC
 	return transport.Do[ConditionResponse](ctx, c.http, http.MethodPatch, url, request)
 }
 
+// SearchConditions yields every condition matching filter, paging through the search endpoint.
+// The service can filter conditions on id, type and value.
+func (c *Client) SearchConditions(ctx context.Context, filter map[string]transport.SearchFilter) iter.Seq2[ConditionResponse, error] {
+	url := fmt.Sprintf("%s/%s/v1/conditions", c.http.BaseURL, servicePrefix)
+
+	return transport.SearchAll[ConditionResponse](ctx, c.http, url, filter)
+}
+
 func (c *Client) DeleteCondition(ctx context.Context, id string) error {
 	url := fmt.Sprintf("%s/%s/v1/conditions/%s", c.http.BaseURL, servicePrefix, id)
 
@@ -69,6 +78,14 @@ func (c *Client) UpdateAction(ctx context.Context, id string, request UpdateActi
 	return transport.Do[ActionResponse](ctx, c.http, http.MethodPatch, url, request)
 }
 
+// SearchActions yields every action matching filter, paging through the search endpoint.
+// The service can filter actions on id, type and value.
+func (c *Client) SearchActions(ctx context.Context, filter map[string]transport.SearchFilter) iter.Seq2[ActionResponse, error] {
+	url := fmt.Sprintf("%s/%s/v1/actions", c.http.BaseURL, servicePrefix)
+
+	return transport.SearchAll[ActionResponse](ctx, c.http, url, filter)
+}
+
 func (c *Client) DeleteAction(ctx context.Context, id string) error {
 	url := fmt.Sprintf("%s/%s/v1/actions/%s", c.http.BaseURL, servicePrefix, id)
 
@@ -95,6 +112,15 @@ func (c *Client) UpdateRule(ctx context.Context, id string, request UpdateRuleRe
 	url := fmt.Sprintf("%s/%s/v1/rules/%s", c.http.BaseURL, servicePrefix, id)
 
 	return transport.Do[RuleResponse](ctx, c.http, http.MethodPatch, url, request)
+}
+
+// SearchRules yields every rule matching filter, paging through the search endpoint.
+// The service can filter rules on id, tags, apiId, actionId and conditionId - the last three by
+// looking up which rules reference them.
+func (c *Client) SearchRules(ctx context.Context, filter map[string]transport.SearchFilter) iter.Seq2[RuleResponse, error] {
+	url := fmt.Sprintf("%s/%s/v1/rules", c.http.BaseURL, servicePrefix)
+
+	return transport.SearchAll[RuleResponse](ctx, c.http, url, filter)
 }
 
 func (c *Client) DeleteRule(ctx context.Context, id string) error {
