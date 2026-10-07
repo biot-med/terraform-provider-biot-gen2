@@ -10,7 +10,7 @@
 list "biot_abac_rule" "custom" {
   provider = biot-gen2
 
-  # Terraform returns at most 100 results per list block unless told otherwise.
+  # Raise Terraform's default of 100 results per list block, so everything is listed.
   limit = 1000
 
   config {
