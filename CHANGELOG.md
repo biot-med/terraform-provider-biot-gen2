@@ -1,3 +1,9 @@
+## 1.2.0
+
+**Release date**: Oct 18, 2026
+- [SOFT-9901] Added `file_configuration.archive_after` to built-in and custom attributes, to move FILE and IMAGE attribute files to archive storage a set time after upload (for example `DAYS_30`; the server validates the value). No block means files stay in regular storage
+    - Earlier provider versions clear this setting on apply
+
 ## 1.1.0
 
 **Release date**: Oct 07, 2026

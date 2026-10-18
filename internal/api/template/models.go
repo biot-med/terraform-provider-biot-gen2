@@ -84,11 +84,13 @@ type BaseAttribute struct {
 type BuiltinAttributeRequest struct {
 	BaseAttribute
 	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
+	FileConfiguration        *FileConfiguration        `json:"fileConfiguration,omitempty"`
 }
 
 type CustomAttributeRequest struct {
 	BaseAttribute
 	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
+	FileConfiguration        *FileConfiguration        `json:"fileConfiguration,omitempty"`
 	Category                 string                    `json:"category"`
 }
 
@@ -103,11 +105,13 @@ type BuiltinAttributeResponse struct {
 	BaseAttributeResponse
 	PublicAccess             *bool                     `json:"publicAccess"`
 	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
+	FileConfiguration        *FileConfiguration        `json:"fileConfiguration"`
 }
 
 type CustomAttributeResponse struct {
 	BaseAttributeResponse
 	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
+	FileConfiguration        *FileConfiguration        `json:"fileConfiguration"`
 }
 
 type TemplateAttributeRequest struct {
@@ -192,6 +196,11 @@ type DateUiConfiguration struct {
 type DateTimeUiConfiguration struct {
 	DateStyle *string `json:"dateStyle,omitempty"`
 	TimeStyle *string `json:"timeStyle,omitempty"`
+}
+
+// FileConfiguration holds the storage settings of a FILE or IMAGE attribute; the server validates them.
+type FileConfiguration struct {
+	ArchiveAfter *string `json:"archiveAfter,omitempty"`
 }
 
 type Category struct {
