@@ -280,7 +280,7 @@ func fileConfigurationSchema() schema.SingleNestedAttribute {
 		Attributes: map[string]schema.Attribute{
 			"archive_after": schema.StringAttribute{
 				Required:    true,
-				Description: "Moves the attribute's files to archive storage this long after upload: IMMEDIATELY, DAYS_7, DAYS_30, DAYS_90 or DAYS_180. Not allowed on public attributes.",
+				Description: "How long after upload the attribute's files move to archive storage, for example DAYS_30. The BioT server validates the value.",
 			},
 		},
 	}
