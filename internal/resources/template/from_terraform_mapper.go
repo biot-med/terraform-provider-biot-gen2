@@ -75,6 +75,7 @@ func mapCustomAttributes(ctx context.Context, attrs []TerraformCustomAttribute) 
 			BaseAttribute:            mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
 			Category:                 attr.Category.ValueString(),
 			AnalyticsDbConfiguration: mapAnalyticsDbConfig(ctx, attr.AnalyticsDbConfiguration),
+			FileConfiguration:        mapFileConfiguration(attr.FileConfiguration),
 		})
 	}
 	return result
@@ -86,6 +87,7 @@ func mapBuiltinAttributes(ctx context.Context, attrs []TerraformBuiltinAttribute
 		result = append(result, templateapi.BuiltinAttributeRequest{
 			BaseAttribute:            mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
 			AnalyticsDbConfiguration: mapAnalyticsDbConfig(ctx, attr.AnalyticsDbConfiguration),
+			FileConfiguration:        mapFileConfiguration(attr.FileConfiguration),
 		})
 	}
 	return result
@@ -213,6 +215,16 @@ func mapUiConfiguration(uiConfiguration *TerraformUiConfiguration) *templateapi.
 	}
 
 	return result
+}
+
+func mapFileConfiguration(fileConfiguration *TerraformFileConfiguration) *templateapi.FileConfiguration {
+	if fileConfiguration == nil {
+		return nil
+	}
+
+	return &templateapi.FileConfiguration{
+		ArchiveAfter: utils.StringOrNilPtr(fileConfiguration.ArchiveAfter),
+	}
 }
 
 func mapSelectableValues(attributeType string, vals []TerraformSelectableValue) []templateapi.SelectableValue {

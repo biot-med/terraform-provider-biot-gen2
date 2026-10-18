@@ -248,6 +248,8 @@ func builtinAttributeSchema() map[string]schema.Attribute {
 	// System-managed: true for built-in FILE/IMAGE attributes published to the public bucket. Read-only.
 	attrSchema["public_access"] = schema.BoolAttribute{Computed: true}
 
+	attrSchema["file_configuration"] = fileConfigurationSchema()
+
 	return attrSchema
 }
 
@@ -266,7 +268,22 @@ func customAttributeSchema() map[string]schema.Attribute {
 		},
 	}
 
+	attrSchema["file_configuration"] = fileConfigurationSchema()
+
 	return attrSchema
+}
+
+func fileConfigurationSchema() schema.SingleNestedAttribute {
+	return schema.SingleNestedAttribute{
+		Optional:    true,
+		Description: "Storage settings of a FILE or IMAGE attribute. Omit to keep files in regular storage.",
+		Attributes: map[string]schema.Attribute{
+			"archive_after": schema.StringAttribute{
+				Required:    true,
+				Description: "Moves the attribute's files to archive storage this long after upload: IMMEDIATELY, DAYS_7, DAYS_30, DAYS_90 or DAYS_180. Not allowed on public attributes.",
+			},
+		},
+	}
 }
 
 func templateAttributeSchema() map[string]schema.Attribute {

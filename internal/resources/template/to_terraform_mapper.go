@@ -53,6 +53,7 @@ func mapBuiltinAttributeResponseToTerraformAttribute(ctx context.Context, attr t
 		BaseTerraformAttribute:   base,
 		PublicAccess:             utils.BoolOrNullPtr(attr.PublicAccess),
 		AnalyticsDbConfiguration: mapToTerraformAnalyticsDbConfiguration(ctx, attr.AnalyticsDbConfiguration),
+		FileConfiguration:        mapToTerraformFileConfiguration(attr.FileConfiguration),
 	}
 }
 
@@ -62,6 +63,7 @@ func mapCustomAttributeResponseToTerraformAttribute(ctx context.Context, attr te
 	return TerraformCustomAttribute{
 		BaseTerraformAttribute:   base,
 		AnalyticsDbConfiguration: mapToTerraformAnalyticsDbConfiguration(ctx, attr.AnalyticsDbConfiguration),
+		FileConfiguration:        mapToTerraformFileConfiguration(attr.FileConfiguration),
 	}
 }
 
@@ -212,6 +214,18 @@ func mapToTerraformUiConfiguration(ctx context.Context, uiConfiguration *templat
 	}
 
 	return result
+}
+
+// The console saves "never archive" as {archiveAfter: null}; it maps to no block, like an absent configuration,
+// so attributes without a block in the configuration don't show a diff.
+func mapToTerraformFileConfiguration(fileConfiguration *templateapi.FileConfiguration) *TerraformFileConfiguration {
+	if fileConfiguration == nil || fileConfiguration.ArchiveAfter == nil {
+		return nil
+	}
+
+	return &TerraformFileConfiguration{
+		ArchiveAfter: types.StringValue(*fileConfiguration.ArchiveAfter),
+	}
 }
 
 func mapToTerraformParentTemplateID(ctx context.Context, parentTemplate *templateapi.ParentTemplate) types.String {
