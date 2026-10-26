@@ -4,7 +4,7 @@
 - [SOFT-9901] Added `file_configuration.archive_after` to built-in and custom attributes, to move FILE and IMAGE attribute files to archive storage a set time after upload (for example `DAYS_30`; the server validates the value). No block means files stay in regular storage
     - Earlier provider versions clear this setting on apply
 - [SOFT-9940] Added `validation.allowed_extensions` to template attributes: the ordered list of file extensions a FILE or IMAGE attribute accepts (for example `["pdf", "png"]`, `["<none>"]` for files without an extension, or `["*"]` alone for all types)
-    - Required by BioT for custom FILE and IMAGE attributes on create and update. Attributes that existed before read back `["*"]`, so add `allowed_extensions = ["*"]` to keep their current behavior
+    - A new custom FILE or IMAGE attribute must set it (BioT rejects it otherwise). An existing attribute without it in the configuration keeps the list BioT holds; attributes that existed before read back `["*"]`
     - Read-only on built-in attributes; their list is set by BioT
 - [SOFT-9940] Removed `validation.supported_mime_types`, which BioT no longer supports
 

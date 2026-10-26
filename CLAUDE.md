@@ -64,7 +64,7 @@ Each ABAC subpackage also has a `list.go` (`NewListResource`), registered in `Li
 - Generated config always writes `provider = biot-gen2` (the provider's type name), so projects should use that local name.
 
 ### Custom Plan Modifiers (`internal/resources/biot_plan_modifiers/`)
-- `CopyIDFromStateByNameSetModifier` — preserves computed IDs across plan cycles by matching on `name`
+- `CopyComputedFromStateByNameSetModifier` — preserves computed values (IDs, `validation.allowed_extensions`) across plan cycles by matching on `name`; Terraform cannot match set elements to state, so without it they plan as unknown
 - `JsonNormalizePlanModifier` — normalizes JSON strings to suppress spurious diffs on `value_json` fields
 
 ### Utilities (`internal/utils/mapping_utils.go`)

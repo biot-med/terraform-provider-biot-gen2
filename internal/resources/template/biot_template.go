@@ -94,7 +94,7 @@ func (r *BiotTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 					Attributes: builtinAttributeSchema(),
 				},
 				PlanModifiers: []planmodifier.Set{
-					biotplanmodifiers.CopyIDFromStateByNameSetModifier{},
+					biotplanmodifiers.CopyComputedFromStateByNameSetModifier{},
 				},
 			},
 			"custom_attributes": schema.SetNestedAttribute{
@@ -104,7 +104,7 @@ func (r *BiotTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 					Attributes: customAttributeSchema(),
 				},
 				PlanModifiers: []planmodifier.Set{
-					biotplanmodifiers.CopyIDFromStateByNameSetModifier{},
+					biotplanmodifiers.CopyComputedFromStateByNameSetModifier{},
 				},
 			},
 			"template_attributes": schema.SetNestedAttribute{
@@ -115,7 +115,7 @@ func (r *BiotTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 					Attributes: templateAttributeSchema(),
 				},
 				PlanModifiers: []planmodifier.Set{
-					biotplanmodifiers.CopyIDFromStateByNameSetModifier{},
+					biotplanmodifiers.CopyComputedFromStateByNameSetModifier{},
 				},
 			},
 		},
