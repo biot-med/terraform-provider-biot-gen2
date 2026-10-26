@@ -84,8 +84,14 @@ func mapCustomAttributes(ctx context.Context, attrs []TerraformCustomAttribute) 
 func mapBuiltinAttributes(ctx context.Context, attrs []TerraformBuiltinAttribute) []templateapi.BuiltinAttributeRequest {
 	result := []templateapi.BuiltinAttributeRequest{}
 	for _, attr := range attrs {
+		base := mapBaseAttribute(ctx, attr.BaseTerraformAttribute)
+		// The owning service sets a built-in attribute's list, so it is never sent.
+		if base.Validation != nil {
+			base.Validation.AllowedExtensions = nil
+		}
+
 		result = append(result, templateapi.BuiltinAttributeRequest{
-			BaseAttribute:            mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
+			BaseAttribute:            base,
 			AnalyticsDbConfiguration: mapAnalyticsDbConfig(ctx, attr.AnalyticsDbConfiguration),
 			FileConfiguration:        mapFileConfiguration(attr.FileConfiguration),
 		})
@@ -174,9 +180,7 @@ func mapValidation(v *TerraformValidation) *templateapi.Validation {
 		validation.Regex = utils.StringOrNilPtr(v.Regex)
 	}
 
-	if len(v.SupportedMimeTypes) > 0 {
-		validation.SupportedMimeTypes = utils.ConvertTerraformStringList(v.SupportedMimeTypes)
-	}
+	validation.AllowedExtensions = utils.ListToStringSlice(v.AllowedExtensions)
 
 	return validation
 }

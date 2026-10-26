@@ -73,6 +73,6 @@ Type conversion helpers between Terraform framework types and native Go types, u
 ## Key Patterns
 
 - **`value_json` fields** accept arbitrary JSON; use `jsonencode()` in Terraform configs and the `JsonNormalizePlanModifier` handles diff normalization.
-- **Tests:** unit tests exist only for `internal/resources/abac/rule` (`validate_test.go`) and `internal/api/transport` (`search_test.go`, search paging); `make test` runs them. There are no acceptance tests yet — `testacc` would need a running BioT server.
+- **Tests:** unit tests exist only for `internal/resources/abac/rule` (`validate_test.go`), `internal/api/transport` (`search_test.go`, search paging) and `internal/resources/template` (`allowed_extensions_test.go`); `make test` runs them. There are no acceptance tests yet — `testacc` would need a running BioT server.
 - **Releases** are automated via Jenkins — pushing to `master` triggers the pipeline which builds and publishes via GoReleaser. No manual release steps needed.
 - **Provider version** is set in `main.go` and must match the version in `build.sh` and `.goreleaser.yml` when cutting a release.

@@ -1,3 +1,11 @@
+## 1.3.0
+
+**Release date**: Oct 25, 2026
+- [SOFT-9940] Added `validation.allowed_extensions` to template attributes: the ordered list of file extensions a FILE or IMAGE attribute accepts (for example `["pdf", "png"]`, `["<none>"]` for files without an extension, or `["*"]` alone for all types)
+    - Required by BioT for custom FILE and IMAGE attributes on create and update. Attributes that existed before read back `["*"]`, so add `allowed_extensions = ["*"]` to keep their current behavior
+    - Read-only on built-in attributes; their list is set by BioT
+- [SOFT-9940] Removed `validation.supported_mime_types`, which BioT no longer supports
+
 ## 1.2.0
 
 **Release date**: Oct 18, 2026

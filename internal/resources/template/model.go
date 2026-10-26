@@ -81,13 +81,13 @@ type TerraformLinkConfiguration struct {
 }
 
 type TerraformValidation struct {
-	Mandatory          types.Bool     `tfsdk:"mandatory"`
-	DefaultValue       types.String   `tfsdk:"default_value"`
-	Min                types.Number   `tfsdk:"min"`
-	Max                types.Number   `tfsdk:"max"`
-	Regex              types.String   `tfsdk:"regex"`
-	Unique             types.Bool     `tfsdk:"unique"`
-	SupportedMimeTypes []types.String `tfsdk:"supported_mime_types"`
+	Mandatory         types.Bool   `tfsdk:"mandatory"`
+	DefaultValue      types.String `tfsdk:"default_value"`
+	Min               types.Number `tfsdk:"min"`
+	Max               types.Number `tfsdk:"max"`
+	Regex             types.String `tfsdk:"regex"`
+	Unique            types.Bool   `tfsdk:"unique"`
+	AllowedExtensions types.List   `tfsdk:"allowed_extensions"`
 }
 
 type TerraformValidationMetadata struct {
