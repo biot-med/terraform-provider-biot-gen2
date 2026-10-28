@@ -151,13 +151,13 @@ type LinkConfiguration struct {
 }
 
 type Validation struct {
-	Mandatory          *bool    `json:"mandatory"`
-	DefaultValue       *string  `json:"defaultValue"`
-	Min                *float64 `json:"min"`
-	Max                *float64 `json:"max"`
-	Regex              *string  `json:"regex"`
-	Unique             *bool    `json:"unique,omitempty"`
-	SupportedMimeTypes []string `json:"supportedMimeTypes,omitempty"`
+	Mandatory         *bool    `json:"mandatory"`
+	DefaultValue      *string  `json:"defaultValue"`
+	Min               *float64 `json:"min"`
+	Max               *float64 `json:"max"`
+	Regex             *string  `json:"regex"`
+	Unique            *bool    `json:"unique,omitempty"`
+	AllowedExtensions []string `json:"allowedExtensions,omitempty"`
 }
 
 // ErrorDetails is the settings-service shape of transport.APIError.Details. Recover it with

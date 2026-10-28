@@ -164,20 +164,15 @@ func mapToTerraformValidation(ctx context.Context, validation *templateapi.Valid
 		return nil
 	}
 
-	result := &TerraformValidation{
-		Mandatory:    utils.BoolOrNullPtr(validation.Mandatory),
-		DefaultValue: utils.StringOrNullPtr(validation.DefaultValue),
-		Min:          utils.Float64OrNullPtr(validation.Min),
-		Max:          utils.Float64OrNullPtr(validation.Max),
-		Regex:        utils.StringOrNullPtr(validation.Regex),
-		Unique:       utils.BoolOrNullPtr(validation.Unique),
+	return &TerraformValidation{
+		Mandatory:         utils.BoolOrNullPtr(validation.Mandatory),
+		DefaultValue:      utils.StringOrNullPtr(validation.DefaultValue),
+		Min:               utils.Float64OrNullPtr(validation.Min),
+		Max:               utils.Float64OrNullPtr(validation.Max),
+		Regex:             utils.StringOrNullPtr(validation.Regex),
+		Unique:            utils.BoolOrNullPtr(validation.Unique),
+		AllowedExtensions: utils.StringSliceToList(validation.AllowedExtensions),
 	}
-
-	if len(validation.SupportedMimeTypes) > 0 {
-		result.SupportedMimeTypes = utils.ConvertStringList(validation.SupportedMimeTypes)
-	}
-
-	return result
 }
 
 func mapToTerraformNumericMetaData(ctx context.Context, numericMetaData *templateapi.NumericMetaData) *TerraformNumericMetaData {

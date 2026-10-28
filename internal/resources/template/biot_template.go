@@ -94,7 +94,7 @@ func (r *BiotTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 					Attributes: builtinAttributeSchema(),
 				},
 				PlanModifiers: []planmodifier.Set{
-					biotplanmodifiers.CopyIDFromStateByNameSetModifier{},
+					biotplanmodifiers.CopyComputedFromStateByNameSetModifier{},
 				},
 			},
 			"custom_attributes": schema.SetNestedAttribute{
@@ -104,7 +104,7 @@ func (r *BiotTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 					Attributes: customAttributeSchema(),
 				},
 				PlanModifiers: []planmodifier.Set{
-					biotplanmodifiers.CopyIDFromStateByNameSetModifier{},
+					biotplanmodifiers.CopyComputedFromStateByNameSetModifier{},
 				},
 			},
 			"template_attributes": schema.SetNestedAttribute{
@@ -115,7 +115,7 @@ func (r *BiotTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 					Attributes: templateAttributeSchema(),
 				},
 				PlanModifiers: []planmodifier.Set{
-					biotplanmodifiers.CopyIDFromStateByNameSetModifier{},
+					biotplanmodifiers.CopyComputedFromStateByNameSetModifier{},
 				},
 			},
 		},
@@ -158,34 +158,14 @@ func attributeSchema() map[string]schema.Attribute {
 			},
 		},
 
-		"validation": schema.SingleNestedAttribute{
-			Optional: true,
-			Attributes: map[string]schema.Attribute{
-				"mandatory": schema.BoolAttribute{Optional: true},
-				"default_value": schema.StringAttribute{
-					Optional:    true,
-					Description: "Default value as JSON string. Can be a string, number, object, or array. Examples: '\"text\"', '42', '{\"key\":\"value\"}', '[\"item1\",\"item2\"]'. Use jsonencode() function for complex values.",
-					PlanModifiers: []planmodifier.String{
-						biotplanmodifiers.JsonNormalizePlanModifier{},
-					},
-				},
-				"min":   schema.NumberAttribute{Optional: true},
-				"max":   schema.NumberAttribute{Optional: true},
-				"regex": schema.StringAttribute{Optional: true},
-				// No Default here: this attribute lives inside a SetNestedAttribute, where a
-				// schema default can overwrite a value the practitioner explicitly set
-				// (SOFT-9875). Computed alone is enough - the server already defaults
-				// unique to false when the field is omitted from the request.
-				"unique": schema.BoolAttribute{
-					Optional: true,
-					Computed: true,
-				},
-				"supported_mime_types": schema.ListAttribute{
-					ElementType: types.StringType,
-					Optional:    true,
-				},
-			},
-		},
+		"validation": validationSchema(schema.ListAttribute{
+			ElementType: types.StringType,
+			// No Default: attributes that existed before the list was introduced read back ["*"],
+			// and a default would show them as changed.
+			Optional:    true,
+			Computed:    true,
+			Description: allowedExtensionsDescription,
+		}),
 
 		"numeric_meta_data": schema.SingleNestedAttribute{
 			Optional: true,
@@ -248,6 +228,13 @@ func builtinAttributeSchema() map[string]schema.Attribute {
 	// System-managed: true for built-in FILE/IMAGE attributes published to the public bucket. Read-only.
 	attrSchema["public_access"] = schema.BoolAttribute{Computed: true}
 
+	// A built-in attribute's list is set by the service that owns it. Read-only.
+	attrSchema["validation"] = validationSchema(schema.ListAttribute{
+		ElementType: types.StringType,
+		Computed:    true,
+		Description: allowedExtensionsDescription,
+	})
+
 	attrSchema["file_configuration"] = fileConfigurationSchema()
 
 	return attrSchema
@@ -271,6 +258,36 @@ func customAttributeSchema() map[string]schema.Attribute {
 	attrSchema["file_configuration"] = fileConfigurationSchema()
 
 	return attrSchema
+}
+
+const allowedExtensionsDescription = "File extensions a FILE or IMAGE attribute accepts, in the order the Console shows them: lower-case letters and digits without the dot (for example pdf), \"<none>\" for files without an extension, or \"*\" alone for all types. See the BioT documentation."
+
+func validationSchema(allowedExtensions schema.ListAttribute) schema.SingleNestedAttribute {
+	return schema.SingleNestedAttribute{
+		Optional: true,
+		Attributes: map[string]schema.Attribute{
+			"mandatory": schema.BoolAttribute{Optional: true},
+			"default_value": schema.StringAttribute{
+				Optional:    true,
+				Description: "Default value as JSON string. Can be a string, number, object, or array. Examples: '\"text\"', '42', '{\"key\":\"value\"}', '[\"item1\",\"item2\"]'. Use jsonencode() function for complex values.",
+				PlanModifiers: []planmodifier.String{
+					biotplanmodifiers.JsonNormalizePlanModifier{},
+				},
+			},
+			"min":   schema.NumberAttribute{Optional: true},
+			"max":   schema.NumberAttribute{Optional: true},
+			"regex": schema.StringAttribute{Optional: true},
+			// No Default here: this attribute lives inside a SetNestedAttribute, where a
+			// schema default can overwrite a value the practitioner explicitly set
+			// (SOFT-9875). Computed alone is enough - the server already defaults
+			// unique to false when the field is omitted from the request.
+			"unique": schema.BoolAttribute{
+				Optional: true,
+				Computed: true,
+			},
+			"allowed_extensions": allowedExtensions,
+		},
+	}
 }
 
 func fileConfigurationSchema() schema.SingleNestedAttribute {
