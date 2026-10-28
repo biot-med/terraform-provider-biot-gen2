@@ -39,12 +39,14 @@ type TerraformBuiltinAttribute struct {
 
 	PublicAccess             types.Bool                         `tfsdk:"public_access"`
 	AnalyticsDbConfiguration *TerraformAnalyticsDbConfiguration `tfsdk:"analytics_db_configuration"`
+	FileConfiguration        *TerraformFileConfiguration        `tfsdk:"file_configuration"`
 }
 
 type TerraformCustomAttribute struct {
 	BaseTerraformAttribute
 
 	AnalyticsDbConfiguration *TerraformAnalyticsDbConfiguration `tfsdk:"analytics_db_configuration"`
+	FileConfiguration        *TerraformFileConfiguration        `tfsdk:"file_configuration"`
 }
 
 type TerraformTemplateAttribute struct {
@@ -79,13 +81,13 @@ type TerraformLinkConfiguration struct {
 }
 
 type TerraformValidation struct {
-	Mandatory          types.Bool     `tfsdk:"mandatory"`
-	DefaultValue       types.String   `tfsdk:"default_value"`
-	Min                types.Number   `tfsdk:"min"`
-	Max                types.Number   `tfsdk:"max"`
-	Regex              types.String   `tfsdk:"regex"`
-	Unique             types.Bool     `tfsdk:"unique"`
-	SupportedMimeTypes []types.String `tfsdk:"supported_mime_types"`
+	Mandatory         types.Bool   `tfsdk:"mandatory"`
+	DefaultValue      types.String `tfsdk:"default_value"`
+	Min               types.Number `tfsdk:"min"`
+	Max               types.Number `tfsdk:"max"`
+	Regex             types.String `tfsdk:"regex"`
+	Unique            types.Bool   `tfsdk:"unique"`
+	AllowedExtensions types.List   `tfsdk:"allowed_extensions"`
 }
 
 type TerraformValidationMetadata struct {
@@ -113,6 +115,10 @@ type TerraformDateUiConfiguration struct {
 type TerraformDateTimeUiConfiguration struct {
 	DateStyle types.String `tfsdk:"date_style"`
 	TimeStyle types.String `tfsdk:"time_style"`
+}
+
+type TerraformFileConfiguration struct {
+	ArchiveAfter types.String `tfsdk:"archive_after"`
 }
 
 type TerraformSelectableValue struct {

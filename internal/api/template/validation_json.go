@@ -12,13 +12,13 @@ import (
 func (v *Validation) UnmarshalJSON(data []byte) error {
 	// Define a temporary struct with interface{} for defaultValue
 	type validationAlias struct {
-		Mandatory          *bool       `json:"mandatory"`
-		DefaultValue       interface{} `json:"defaultValue"`
-		Min                *float64    `json:"min"`
-		Max                *float64    `json:"max"`
-		Regex              *string     `json:"regex"`
-		Unique             *bool       `json:"unique"`
-		SupportedMimeTypes []string    `json:"supportedMimeTypes"`
+		Mandatory         *bool       `json:"mandatory"`
+		DefaultValue      interface{} `json:"defaultValue"`
+		Min               *float64    `json:"min"`
+		Max               *float64    `json:"max"`
+		Regex             *string     `json:"regex"`
+		Unique            *bool       `json:"unique"`
+		AllowedExtensions []string    `json:"allowedExtensions"`
 	}
 
 	var alias validationAlias
@@ -32,7 +32,7 @@ func (v *Validation) UnmarshalJSON(data []byte) error {
 	v.Max = alias.Max
 	v.Regex = alias.Regex
 	v.Unique = alias.Unique
-	v.SupportedMimeTypes = alias.SupportedMimeTypes
+	v.AllowedExtensions = alias.AllowedExtensions
 
 	// Convert defaultValue to string if present
 	if alias.DefaultValue != nil {
@@ -68,22 +68,22 @@ func (v *Validation) UnmarshalJSON(data []byte) error {
 func (v Validation) MarshalJSON() ([]byte, error) {
 	// Define a temporary struct with interface{} for defaultValue
 	type validationAlias struct {
-		Mandatory          *bool       `json:"mandatory,omitempty"`
-		DefaultValue       interface{} `json:"defaultValue,omitempty"`
-		Min                *float64    `json:"min,omitempty"`
-		Max                *float64    `json:"max,omitempty"`
-		Regex              *string     `json:"regex,omitempty"`
-		Unique             *bool       `json:"unique,omitempty"`
-		SupportedMimeTypes []string    `json:"supportedMimeTypes,omitempty"`
+		Mandatory         *bool       `json:"mandatory,omitempty"`
+		DefaultValue      interface{} `json:"defaultValue,omitempty"`
+		Min               *float64    `json:"min,omitempty"`
+		Max               *float64    `json:"max,omitempty"`
+		Regex             *string     `json:"regex,omitempty"`
+		Unique            *bool       `json:"unique,omitempty"`
+		AllowedExtensions []string    `json:"allowedExtensions,omitempty"`
 	}
 
 	alias := validationAlias{
-		Mandatory:          v.Mandatory,
-		Min:                v.Min,
-		Max:                v.Max,
-		Regex:              v.Regex,
-		Unique:             v.Unique,
-		SupportedMimeTypes: v.SupportedMimeTypes,
+		Mandatory:         v.Mandatory,
+		Min:               v.Min,
+		Max:               v.Max,
+		Regex:             v.Regex,
+		Unique:            v.Unique,
+		AllowedExtensions: v.AllowedExtensions,
 	}
 
 	// Parse the stored string to get the actual value

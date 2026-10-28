@@ -75,6 +75,7 @@ func mapCustomAttributes(ctx context.Context, attrs []TerraformCustomAttribute) 
 			BaseAttribute:            mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
 			Category:                 attr.Category.ValueString(),
 			AnalyticsDbConfiguration: mapAnalyticsDbConfig(ctx, attr.AnalyticsDbConfiguration),
+			FileConfiguration:        mapFileConfiguration(attr.FileConfiguration),
 		})
 	}
 	return result
@@ -83,9 +84,16 @@ func mapCustomAttributes(ctx context.Context, attrs []TerraformCustomAttribute) 
 func mapBuiltinAttributes(ctx context.Context, attrs []TerraformBuiltinAttribute) []templateapi.BuiltinAttributeRequest {
 	result := []templateapi.BuiltinAttributeRequest{}
 	for _, attr := range attrs {
+		base := mapBaseAttribute(ctx, attr.BaseTerraformAttribute)
+		// The owning service sets a built-in attribute's list, so it is never sent.
+		if base.Validation != nil {
+			base.Validation.AllowedExtensions = nil
+		}
+
 		result = append(result, templateapi.BuiltinAttributeRequest{
-			BaseAttribute:            mapBaseAttribute(ctx, attr.BaseTerraformAttribute),
+			BaseAttribute:            base,
 			AnalyticsDbConfiguration: mapAnalyticsDbConfig(ctx, attr.AnalyticsDbConfiguration),
+			FileConfiguration:        mapFileConfiguration(attr.FileConfiguration),
 		})
 	}
 	return result
@@ -172,9 +180,7 @@ func mapValidation(v *TerraformValidation) *templateapi.Validation {
 		validation.Regex = utils.StringOrNilPtr(v.Regex)
 	}
 
-	if len(v.SupportedMimeTypes) > 0 {
-		validation.SupportedMimeTypes = utils.ConvertTerraformStringList(v.SupportedMimeTypes)
-	}
+	validation.AllowedExtensions = utils.ListToStringSlice(v.AllowedExtensions)
 
 	return validation
 }
@@ -213,6 +219,16 @@ func mapUiConfiguration(uiConfiguration *TerraformUiConfiguration) *templateapi.
 	}
 
 	return result
+}
+
+func mapFileConfiguration(fileConfiguration *TerraformFileConfiguration) *templateapi.FileConfiguration {
+	if fileConfiguration == nil {
+		return nil
+	}
+
+	return &templateapi.FileConfiguration{
+		ArchiveAfter: utils.StringOrNilPtr(fileConfiguration.ArchiveAfter),
+	}
 }
 
 func mapSelectableValues(attributeType string, vals []TerraformSelectableValue) []templateapi.SelectableValue {
