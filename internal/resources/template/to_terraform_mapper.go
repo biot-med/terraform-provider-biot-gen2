@@ -53,6 +53,7 @@ func mapBuiltinAttributeResponseToTerraformAttribute(ctx context.Context, attr t
 		BaseTerraformAttribute:   base,
 		PublicAccess:             utils.BoolOrNullPtr(attr.PublicAccess),
 		AnalyticsDbConfiguration: mapToTerraformAnalyticsDbConfiguration(ctx, attr.AnalyticsDbConfiguration),
+		FileConfiguration:        mapToTerraformFileConfiguration(attr.FileConfiguration),
 	}
 }
 
@@ -62,6 +63,7 @@ func mapCustomAttributeResponseToTerraformAttribute(ctx context.Context, attr te
 	return TerraformCustomAttribute{
 		BaseTerraformAttribute:   base,
 		AnalyticsDbConfiguration: mapToTerraformAnalyticsDbConfiguration(ctx, attr.AnalyticsDbConfiguration),
+		FileConfiguration:        mapToTerraformFileConfiguration(attr.FileConfiguration),
 	}
 }
 
@@ -162,20 +164,15 @@ func mapToTerraformValidation(ctx context.Context, validation *templateapi.Valid
 		return nil
 	}
 
-	result := &TerraformValidation{
-		Mandatory:    utils.BoolOrNullPtr(validation.Mandatory),
-		DefaultValue: utils.StringOrNullPtr(validation.DefaultValue),
-		Min:          utils.Float64OrNullPtr(validation.Min),
-		Max:          utils.Float64OrNullPtr(validation.Max),
-		Regex:        utils.StringOrNullPtr(validation.Regex),
-		Unique:       utils.BoolOrNullPtr(validation.Unique),
+	return &TerraformValidation{
+		Mandatory:         utils.BoolOrNullPtr(validation.Mandatory),
+		DefaultValue:      utils.StringOrNullPtr(validation.DefaultValue),
+		Min:               utils.Float64OrNullPtr(validation.Min),
+		Max:               utils.Float64OrNullPtr(validation.Max),
+		Regex:             utils.StringOrNullPtr(validation.Regex),
+		Unique:            utils.BoolOrNullPtr(validation.Unique),
+		AllowedExtensions: utils.StringSliceToList(validation.AllowedExtensions),
 	}
-
-	if len(validation.SupportedMimeTypes) > 0 {
-		result.SupportedMimeTypes = utils.ConvertStringList(validation.SupportedMimeTypes)
-	}
-
-	return result
 }
 
 func mapToTerraformNumericMetaData(ctx context.Context, numericMetaData *templateapi.NumericMetaData) *TerraformNumericMetaData {
@@ -212,6 +209,18 @@ func mapToTerraformUiConfiguration(ctx context.Context, uiConfiguration *templat
 	}
 
 	return result
+}
+
+// The console saves "never archive" as {archiveAfter: null}; it maps to no block, like an absent configuration,
+// so attributes without a block in the configuration don't show a diff.
+func mapToTerraformFileConfiguration(fileConfiguration *templateapi.FileConfiguration) *TerraformFileConfiguration {
+	if fileConfiguration == nil || fileConfiguration.ArchiveAfter == nil {
+		return nil
+	}
+
+	return &TerraformFileConfiguration{
+		ArchiveAfter: types.StringValue(*fileConfiguration.ArchiveAfter),
+	}
 }
 
 func mapToTerraformParentTemplateID(ctx context.Context, parentTemplate *templateapi.ParentTemplate) types.String {

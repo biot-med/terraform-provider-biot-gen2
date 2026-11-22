@@ -11,17 +11,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type CopyIDFromStateByNameSetModifier struct{}
+// CopyComputedFromStateByNameSetModifier carries computed values over from the state element with the same
+// name. Terraform cannot match set elements to their state, so it plans their computed values as unknown.
+type CopyComputedFromStateByNameSetModifier struct{}
 
-func (m CopyIDFromStateByNameSetModifier) Description(_ context.Context) string {
-	return "Copies ID from state to plan based on attribute name."
+func (m CopyComputedFromStateByNameSetModifier) Description(_ context.Context) string {
+	return "Copies computed values (IDs, allowed extensions) from state to plan based on attribute name."
 }
 
-func (m CopyIDFromStateByNameSetModifier) MarkdownDescription(ctx context.Context) string {
+func (m CopyComputedFromStateByNameSetModifier) MarkdownDescription(ctx context.Context) string {
 	return m.Description(ctx)
 }
 
-func (m CopyIDFromStateByNameSetModifier) PlanModifySet(
+func (m CopyComputedFromStateByNameSetModifier) PlanModifySet(
 	ctx context.Context,
 	req planmodifier.SetRequest,
 	resp *planmodifier.SetResponse,
@@ -143,6 +145,16 @@ func copyIDFromStateByNameForSet(
 			}
 		}
 
+		// 3. Copy validation.allowed_extensions when the plan doesn't set it and the type is unchanged
+		if found && attrMap["type"].Equal(stateObj.Attributes()["type"]) {
+			validation, validationDiags := copyAllowedExtensionsFromState(ctx, attrMap["validation"], stateObj.Attributes()["validation"])
+			diags.Append(validationDiags...)
+			if validationDiags.HasError() {
+				return planSet, diags
+			}
+			newAttrMap["validation"] = validation
+		}
+
 		objType := planObj.Type(ctx).(types.ObjectType)
 		newObj, objDiags := types.ObjectValue(objType.AttributeTypes(), newAttrMap)
 		diags.Append(objDiags...)
@@ -156,4 +168,28 @@ func copyIDFromStateByNameForSet(
 	newSet, setDiags := types.SetValue(planSet.ElementType(ctx), updatedObjs)
 	diags.Append(setDiags...)
 	return newSet, diags
+}
+
+func copyAllowedExtensionsFromState(ctx context.Context, planValue, stateValue attr.Value) (attr.Value, diag.Diagnostics) {
+	plan, ok := planValue.(types.Object)
+	if !ok || plan.IsNull() || plan.IsUnknown() {
+		return planValue, nil
+	}
+	state, ok := stateValue.(types.Object)
+	if !ok || state.IsNull() || state.IsUnknown() {
+		return planValue, nil
+	}
+	planAttrs := plan.Attributes()
+	planList, ok := planAttrs["allowed_extensions"].(types.List)
+	if !ok || !planList.IsUnknown() {
+		return planValue, nil
+	}
+	stateList, ok := state.Attributes()["allowed_extensions"].(types.List)
+	if !ok || stateList.IsUnknown() {
+		return planValue, nil
+	}
+
+	newAttrs := maps.Clone(planAttrs)
+	newAttrs["allowed_extensions"] = stateList
+	return types.ObjectValue(plan.AttributeTypes(ctx), newAttrs)
 }

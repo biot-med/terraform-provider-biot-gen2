@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"math/big"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -130,6 +131,36 @@ func ConvertTerraformStringList(in []types.String) []string {
 		} else {
 			out = append(out, "") // or skip if you prefer
 		}
+	}
+	return out
+}
+
+// list helpers
+
+// StringSliceToList converts a native string slice into a Terraform list, keeping its order.
+// A nil slice becomes a null list, since the settings service leaves out fields that don't apply.
+func StringSliceToList(in []string) types.List {
+	if in == nil {
+		return types.ListNull(types.StringType)
+	}
+
+	elements := make([]attr.Value, 0, len(in))
+	for _, v := range in {
+		elements = append(elements, types.StringValue(v))
+	}
+	return types.ListValueMust(types.StringType, elements)
+}
+
+// ListToStringSlice converts a Terraform list of strings into a native slice, keeping its order.
+// A null or unknown list yields nil, which omitempty leaves out of the request.
+func ListToStringSlice(list types.List) []string {
+	if list.IsNull() || list.IsUnknown() {
+		return nil
+	}
+
+	out := make([]string, 0, len(list.Elements()))
+	for _, element := range list.Elements() {
+		out = append(out, element.(types.String).ValueString())
 	}
 	return out
 }

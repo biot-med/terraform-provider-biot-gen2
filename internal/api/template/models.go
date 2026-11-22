@@ -84,11 +84,13 @@ type BaseAttribute struct {
 type BuiltinAttributeRequest struct {
 	BaseAttribute
 	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
+	FileConfiguration        *FileConfiguration        `json:"fileConfiguration,omitempty"`
 }
 
 type CustomAttributeRequest struct {
 	BaseAttribute
 	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
+	FileConfiguration        *FileConfiguration        `json:"fileConfiguration,omitempty"`
 	Category                 string                    `json:"category"`
 }
 
@@ -103,11 +105,13 @@ type BuiltinAttributeResponse struct {
 	BaseAttributeResponse
 	PublicAccess             *bool                     `json:"publicAccess"`
 	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
+	FileConfiguration        *FileConfiguration        `json:"fileConfiguration"`
 }
 
 type CustomAttributeResponse struct {
 	BaseAttributeResponse
 	AnalyticsDbConfiguration *AnalyticsDbConfiguration `json:"analyticsDbConfiguration"`
+	FileConfiguration        *FileConfiguration        `json:"fileConfiguration"`
 }
 
 type TemplateAttributeRequest struct {
@@ -147,13 +151,13 @@ type LinkConfiguration struct {
 }
 
 type Validation struct {
-	Mandatory          *bool    `json:"mandatory"`
-	DefaultValue       *string  `json:"defaultValue"`
-	Min                *float64 `json:"min"`
-	Max                *float64 `json:"max"`
-	Regex              *string  `json:"regex"`
-	Unique             *bool    `json:"unique,omitempty"`
-	SupportedMimeTypes []string `json:"supportedMimeTypes,omitempty"`
+	Mandatory         *bool    `json:"mandatory"`
+	DefaultValue      *string  `json:"defaultValue"`
+	Min               *float64 `json:"min"`
+	Max               *float64 `json:"max"`
+	Regex             *string  `json:"regex"`
+	Unique            *bool    `json:"unique,omitempty"`
+	AllowedExtensions []string `json:"allowedExtensions,omitempty"`
 }
 
 // ErrorDetails is the settings-service shape of transport.APIError.Details. Recover it with
@@ -192,6 +196,11 @@ type DateUiConfiguration struct {
 type DateTimeUiConfiguration struct {
 	DateStyle *string `json:"dateStyle,omitempty"`
 	TimeStyle *string `json:"timeStyle,omitempty"`
+}
+
+// FileConfiguration holds the storage settings of a FILE or IMAGE attribute; the server validates them.
+type FileConfiguration struct {
+	ArchiveAfter *string `json:"archiveAfter,omitempty"`
 }
 
 type Category struct {
