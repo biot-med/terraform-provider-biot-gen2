@@ -21,6 +21,7 @@ import (
 	"biot.com/terraform-provider-biot-gen2/internal/resources/abac/action"
 	"biot.com/terraform-provider-biot-gen2/internal/resources/abac/condition"
 	"biot.com/terraform-provider-biot-gen2/internal/resources/abac/rule"
+	"biot.com/terraform-provider-biot-gen2/internal/resources/portalbuilder"
 	"biot.com/terraform-provider-biot-gen2/internal/resources/template"
 	"biot.com/terraform-provider-biot-gen2/internal/version"
 )
@@ -149,6 +150,7 @@ func (p *BiotProvider) Resources(ctx context.Context) []func() resource.Resource
 		condition.NewResource,
 		action.NewResource,
 		rule.NewResource,
+		portalbuilder.NewResource,
 	}
 }
 
@@ -159,6 +161,7 @@ func (p *BiotProvider) ListResources(ctx context.Context) []func() list.ListReso
 		condition.NewListResource,
 		action.NewListResource,
 		rule.NewListResource,
+		portalbuilder.NewListResource,
 	}
 }
 
