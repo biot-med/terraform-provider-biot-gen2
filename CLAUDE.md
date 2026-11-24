@@ -21,7 +21,7 @@ Local install for manual Terraform testing:
 
 ## Architecture
 
-This is a **Terraform Plugin Framework** provider for managing BioT configuration. It exposes `biot_template` and the ABAC resources `biot_abac_condition`, `biot_abac_action` and `biot_abac_rule`, and connects to a BioT backend via a custom HTTP client.
+This is a **Terraform Plugin Framework** provider for managing BioT configuration. It exposes `biot_template`, the ABAC resources `biot_abac_condition`, `biot_abac_action` and `biot_abac_rule`, and `biot_portal_view`, and connects to a BioT backend via a custom HTTP client.
 
 ### Provider (`internal/provider/provider.go`)
 Configures credentials (`base_url`, `service_id`, `service_secret_key`), validates server version compatibility, and registers resources/data sources.
@@ -35,7 +35,7 @@ The model types live in `model.go` and are prefixed with `Terraform` (e.g. `Terr
 
 ### API Client (`internal/api/`)
 One package per BioT domain, over shared plumbing. Resources receive `*api.APIClient` and reach a domain through its field: `client.Template.Get(...)`, `client.Abac.CreateCondition(...)`.
-- `client.go` — `api.New(...)` wires everything together; `APIClient` holds `Template`, `Abac`, `Versions`
+- `client.go` — `api.New(...)` wires everything together; `APIClient` holds `Template`, `Abac`, `PortalBuilder`, `CodeSnippet`, `Versions`
 - `transport/` — domain-agnostic HTTP: `transport.Do[T]` / `DoNoContent` / `DoUnauthenticated[T]`, BioT's `APIError` envelope. Attaches the bearer token itself, so API methods never handle tokens.
   - A 404 returns `ErrNotFound` **wrapping** the parsed `APIError`, so check drift with `transport.IsNotFound(err)` and still recover the code with `transport.AsAPIError(err)`. This matters because access-control uses 404 for both "missing" and "you referenced something missing".
   - `APIError.Details` is raw JSON because its shape differs per service; decode it with `apiError.DecodeDetails(&domainpkg.ErrorDetails{})`.
@@ -54,8 +54,15 @@ Each access-control resource has its own subpackage (`condition/`, `action/`, `r
 - `rule/` differs from the other two: its nested sets (`conditions`, `api_execution_points`) make every inner attribute `Required` — never `Default` inside a set element (SOFT-9875). `rule/errors.go` handles `ACTIONS_NOT_FOUND`/`CONDITIONS_NOT_FOUND`, which for a rule mean a dangling reference rather than drift; `rule/validate.go` rejects at plan time what the service would (empty `action_ids`, duplicate conditions, duplicate api + execution point). An empty `api_execution_points` is allowed in config: BioT rejects it only on create (`@NotEmpty` on `CreateRuleRequest`) and accepts it on update, so rules exist with none. The create-only check runs in `ModifyPlan` when there is no prior state — which also covers replacements (id change, `-replace`, `replace_triggered_by`), because Terraform plans a replacement's new object with null prior state. Don't use `resp.RequiresReplace` there: the framework always passes it empty to resource-level `ModifyPlan`.
 - `value` on conditions and actions is the implementation class (not `params.values`). The service cannot change it after creation, so `abac.RejectValueChange` (called from `ModifyPlan`) fails the plan unless `id` changes too. It is deliberately not `RequiresReplace`: replacing deletes the object, and the service then cascades it out of every rule that uses it (`ON DELETE CASCADE`).
 
+### Portal views (`internal/resources/portalbuilder/`)
+`biot_portal_view` applies a portal builder view's layout as raw JSON (`config_json`), for layouts designed in the BioT UI and copied between environments with `terraform query`.
+- BioT creates and deletes views itself (with templates and entities) and has no create/delete API. Create finds the existing view by `portal_type` + `view_type` + `template_name`/`entity_type_name`; Delete is a no-op.
+- The update API (PUT) replaces the whole layout. Read keeps only the *selected* items of the GET response (`SelectedConfig` in `internal/api/portalbuilder/models.go`), which mixes them with what is available.
+- `config_json` is portable: template tabs hold `template.name` and conditional values hold `codeSnippet` (the code) instead of ids. `portable.go` translates both ways; on apply it reuses the view's current snippets when the code is unchanged, and creates unnamed snippets otherwise (BioT snippets cannot be updated, names must be unique, and unused ones are deleted after a day).
+- Diffs ignore nulls, empty lists and formatting (`equivalentJSON`, `keepEquivalentStateModifier`). Some release flags make BioT ignore parts of the input; apply warns when what BioT stored differs.
+
 ### `terraform query` support (list resources)
-Each ABAC subpackage also has a `list.go` (`NewListResource`), registered in `ListResources` on the provider; `terraform query` needs Terraform 1.14+. They page through BioT search via `transport.SearchAll` and share their streaming logic in `abac.ListResults`.
+Each ABAC subpackage, and `portalbuilder`, also has a `list.go` (`NewListResource`), registered in `ListResources` on the provider; `terraform query` needs Terraform 1.14+. They page through BioT search via `transport.SearchAll` and share their streaming logic in `abac.ListResults`.
 - List resources get the API client from `resp.ListResourceData` in the provider's `Configure` — separate from `ResourceData`; without it `r.client` is nil.
 - Each ABAC resource has an identity (`id`) set in Create/Read/Update. List results return it, and `import { identity = {...} }` uses it.
 - `built_in` is filtered locally (condition/action search cannot filter on tags); `value`, `api_id`, `action_id`, `condition_id` go to the server.
@@ -73,6 +80,6 @@ Type conversion helpers between Terraform framework types and native Go types, u
 ## Key Patterns
 
 - **`value_json` fields** accept arbitrary JSON; use `jsonencode()` in Terraform configs and the `JsonNormalizePlanModifier` handles diff normalization.
-- **Tests:** unit tests exist only for `internal/resources/abac/rule` (`validate_test.go`), `internal/api/transport` (`search_test.go`, search paging) and `internal/resources/template` (`allowed_extensions_test.go`); `make test` runs them. There are no acceptance tests yet — `testacc` would need a running BioT server.
+- **Tests:** unit tests exist only for `internal/resources/abac/rule` (`validate_test.go`), `internal/api/transport` (`search_test.go`, search paging), `internal/resources/template` (`allowed_extensions_test.go`) and `internal/resources/portalbuilder` (JSON translation and comparison); `make test` runs them. There are no acceptance tests yet — `testacc` would need a running BioT server.
 - **Releases** are automated via Jenkins — pushing to `master` triggers the pipeline which builds and publishes via GoReleaser. No manual release steps needed.
 - **Provider version** is set in `main.go` and must match the version in `build.sh` and `.goreleaser.yml` when cutting a release.

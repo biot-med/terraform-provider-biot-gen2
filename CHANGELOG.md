@@ -1,3 +1,14 @@
+## 1.3.0
+
+**Release date**: Nov 24, 2026
+- [SOFT-9998] Added `biot_portal_view`, to manage portal builder view layouts in Terraform and copy them between environments
+    - BioT creates views itself, so the resource finds the existing view by `portal_type`, `view_type` and `template_name` (or `entity_type_name`) and applies `config_json` to it. Destroying the resource leaves the view and its layout in BioT
+    - `config_json` holds the layout in BioT's update view format (`attributes`, `measurements`, `tabs`) and replaces the whole layout on apply. Nulls, empty lists and formatting are ignored when comparing
+    - Templates are referred to by name and code snippets by their code, so the same configuration works in every environment: the provider swaps in each environment's template ids and creates the snippets on apply, reusing the view's existing snippets when the code is unchanged
+    - The view's template must exist first: add the `biot_template` to `depends_on`. A missing template fails the apply with an error naming it
+    - Importable by `<portal_type>/<view_id>` or by identity, and listable with `terraform query` (filters: `portal_type`, `view_type`, `template_name`), so layouts designed in the BioT UI can be generated as configuration
+    - The service user needs `SETTINGS_PORTAL_BUILDER_GET_PORTAL_VIEWS`, `SETTINGS_PORTAL_BUILDER_GET_VIEW`, `SETTINGS_PORTAL_BUILDER_UPDATE_VIEW`, `SETTINGS_GET_CODE_SNIPPET` and `SETTINGS_CREATE_CODE_SNIPPET`
+
 ## 1.2.0
 
 **Release date**: Oct 26, 2026
