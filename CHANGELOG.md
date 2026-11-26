@@ -1,3 +1,8 @@
+## 1.3.1
+
+**Release date**: Nov 26, 2026
+- [SOFT-9953] Upgraded `google.golang.org/grpc` to v1.83.2, which fixes its known high-severity vulnerabilities
+
 ## 1.3.0
 
 **Release date**: Nov 24, 2026
